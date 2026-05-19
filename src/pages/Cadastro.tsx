@@ -4,7 +4,7 @@ import { registrar } from '../api/auth'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Select from '../components/ui/Select'
-import logo from '../static/logo_ensaio_eletrico.png'
+import logo from '../static/logo.jpeg'
 
 const PERFIS = [
   { value: 'Técnico', label: 'Técnico' },
