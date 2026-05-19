@@ -1,21 +1,10 @@
-import { useState, useRef, type FormEvent } from 'react'
+import { useState, useRef, useEffect, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router'
 import { login, verifyOtp } from '../api/auth'
 import { useAuth } from '../hooks/useAuth'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import logo from '../static/logo.jpeg'
-
-function getGeolocalizacao(): Promise<{ latitude: number; longitude: number } | null> {
-  return new Promise((resolve) => {
-    if (!navigator.geolocation) return resolve(null)
-    navigator.geolocation.getCurrentPosition(
-      (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
-      () => resolve(null),
-      { timeout: 5000 }
-    )
-  })
-}
 
 export default function Login() {
   const { login: saveAuth } = useAuth()
@@ -31,13 +20,23 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const geoRef = useRef<{ latitude: number; longitude: number } | null>(null)
 
+  // Solicita geolocalização assim que a página abre — dá tempo ao usuário aceitar
+  useEffect(() => {
+    if (!navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        geoRef.current = { latitude: pos.coords.latitude, longitude: pos.coords.longitude }
+      },
+      () => { geoRef.current = null },
+      { timeout: 30000, maximumAge: 60000 }
+    )
+  }, [])
+
   async function handleCredentials(e: FormEvent) {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      const geo = await getGeolocalizacao()
-      geoRef.current = geo
       const res = await login(username, password)
       setUserId(res.userId)
       setEmailHint(res.email)
