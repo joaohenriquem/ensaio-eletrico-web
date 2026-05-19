@@ -14,7 +14,7 @@ import {
   ShieldCheck,
 } from 'lucide-react'
 import { cn } from '../../utils/cn'
-import logo from '../../static/logo_ensaio_eletrico.png'
+import logo from '../../static/logo.jpeg'
 
 const navBase = [
   { to: '/', label: 'Início', icon: Zap, exact: true },
