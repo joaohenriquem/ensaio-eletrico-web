@@ -102,12 +102,17 @@ export default function Login() {
               {loading ? 'Verificando...' : 'Continuar'}
             </Button>
 
-            <p className="text-center text-sm text-gray-500">
-              Não tem acesso?{' '}
-              <Link to="/cadastro" className="font-medium text-[#f0a500] hover:underline">
-                Solicitar cadastro
+            <div className="flex flex-col items-center gap-1">
+              <Link to="/esqueci-senha" className="text-sm text-gray-400 hover:text-gray-600">
+                Esqueci minha senha
               </Link>
-            </p>
+              <p className="text-sm text-gray-500">
+                Não tem acesso?{' '}
+                <Link to="/cadastro" className="font-medium text-[#f0a500] hover:underline">
+                  Solicitar cadastro
+                </Link>
+              </p>
+            </div>
           </form>
         ) : (
           <form onSubmit={handleOtp} className="flex flex-col gap-4">

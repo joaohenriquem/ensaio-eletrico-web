@@ -37,6 +37,14 @@ export async function rejeitarUsuario(id: string, motivo?: string): Promise<void
   await api.put(`/auth/usuarios/${id}/rejeitar`, { motivo })
 }
 
+export async function esqueceuSenha(email: string): Promise<void> {
+  await api.post('/auth/forgot-password', { email })
+}
+
+export async function redefinirSenha(token: string, novaSenha: string): Promise<void> {
+  await api.post('/auth/reset-password', { token, novaSenha })
+}
+
 export async function listarLoginLogs(): Promise<LoginLog[]> {
   const { data } = await api.get<LoginLog[]>('/auth/login-logs')
   return data

@@ -6,6 +6,8 @@ import type { Usuario } from './types'
 import Layout from './components/layout/Layout'
 import Login from './pages/Login'
 import Cadastro from './pages/Cadastro'
+import EsqueciSenha from './pages/EsqueciSenha'
+import RedefinirSenha from './pages/RedefinirSenha'
 import Usuarios from './pages/Usuarios'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
@@ -63,6 +65,8 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/cadastro" element={<Cadastro />} />
+            <Route path="/esqueci-senha" element={<EsqueciSenha />} />
+            <Route path="/redefinir-senha" element={<RedefinirSenha />} />
             <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
             <Route path="/usuarios" element={<PrivateRoute><Usuarios /></PrivateRoute>} />
             <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
