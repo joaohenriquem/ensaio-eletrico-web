@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Plus, Trash2, Download, Pencil } from 'lucide-react'
+import ImageUpload from '../components/ui/ImageUpload'
 import { usePropostas, useCriarProposta, useAtualizarProposta } from '../hooks/usePropostas'
 import { useClientes } from '../hooks/useClientes'
 import { NORMAS_PADRAO, STATUS_PROPOSTA, STATUS_PROPOSTA_COR } from '../utils/constants'
@@ -36,6 +37,7 @@ function NovaPropostaForm({ onSuccess, editData }: { onSuccess: () => void; edit
   const [normas, setNormas] = useState<string[]>(editData?.normas ?? [])
   const [itens, setItens] = useState<InvestimentoItem[]>(editData?.investimento ?? [])
   const [novoItem, setNovoItem] = useState({ descricao: '', valor: '' })
+  const [fotos, setFotos] = useState<string[]>(editData?.fotos ?? [])
   const [assinatura, setAssinatura] = useState(editData?.assinatura ?? '')
   const [nomeAprovador, setNomeAprovador] = useState(editData?.nome_aprovador ?? '')
   const [assinaturaContratado, setAssinaturaContratado] = useState(editData?.assinatura_contratado ?? '')
@@ -76,6 +78,7 @@ function NovaPropostaForm({ onSuccess, editData }: { onSuccess: () => void; edit
       condicoes_pagamento: form.condicoes_pagamento,
       investimento: itens,
       total,
+      fotos: fotos.length > 0 ? fotos : undefined,
       assinatura: assinatura || undefined,
       nome_aprovador: nomeAprovador || undefined,
       assinatura_contratado: assinaturaContratado || undefined,
@@ -116,6 +119,10 @@ function NovaPropostaForm({ onSuccess, editData }: { onSuccess: () => void; edit
           <div className="sm:col-span-2">
             <label className="mb-1 block text-sm font-medium text-gray-700">Objetivo da Proposta</label>
             <textarea rows={3} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#f0a500] focus:outline-none" value={form.objetivo} onChange={(e) => setForm(f => ({ ...f, objetivo: e.target.value }))} />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="mb-1 block text-sm font-medium text-gray-700">Fotos / Anexos</label>
+            <ImageUpload fotos={fotos} onChange={setFotos} max={6} />
           </div>
         </div>
       </Card>

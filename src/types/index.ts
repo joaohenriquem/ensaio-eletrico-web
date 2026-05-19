@@ -126,6 +126,7 @@ export interface Proposta {
   nome_aprovador?: string
   assinatura_contratado?: string
   nome_contratado?: string
+  fotos?: string[]
   status: 'rascunho' | 'enviado' | 'aprovado' | 'rejeitado'
   criado_em?: string
 }
