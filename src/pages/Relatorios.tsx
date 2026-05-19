@@ -7,7 +7,7 @@ import { useClientes } from '../hooks/useClientes'
 import {
   NORMAS_PADRAO, TIPOS_PAINEL, ITENS_INSPECAO_VISUAL, ITENS_LIMPEZA,
   ITENS_REAPERTO, ITENS_VERIFICACAO_ELETRICA, STATUS_RELATORIO, STATUS_RELATORIO_COR,
-  painelVazio, OBJETIVO_PADRAO, CONCLUSAO_PADRAO,
+  painelVazio,
 } from '../utils/constants'
 import { dataBr } from '../utils/formatters'
 import { baixarPdfRelatorio } from '../api/relatorios'

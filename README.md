@@ -4,13 +4,13 @@ Sistema de gestão para empresas de manutenção elétrica. Permite gerenciar cl
 
 ## Funcionalidades
 
-| Módulo | Descrição |
-|--------|-----------|
-| **Dashboard** | KPIs (clientes ativos, OS abertas/concluídas, receita) com gráficos de pizza e barras |
-| **Clientes** | Cadastro e gestão de clientes/condomínios com busca por nome e cidade |
-| **Ordens de Serviço** | Criação, edição e controle de status de OS com notificação por e-mail |
-| **Relatórios** | Laudos técnicos de manutenção elétrica com checklists por painel (inspeção visual, limpeza, reaperto, verificação elétrica), fotos e assinatura digital |
-| **Propostas** | Propostas comerciais com tabela de investimento, normas técnicas, assinatura digital e exportação em PDF |
+| Módulo           | Descrição                                                                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Dashboard**    | KPIs (clientes ativos, OS abertas/concluídas, receita) com gráficos de pizza e barras                                                      |
+| **Clientes**     | Cadastro e gestão de clientes/condomínios com busca por nome e cidade                                                                      |
+| **Ordens de Serviço** | Criação, edição e controle de status de OS com notificação por e-mail                                                                |
+| **Relatórios**   | Laudos técnicos com checklists por painel (inspeção visual, limpeza, reaperto, verificação elétrica), fotos e assinatura digital           |
+| **Propostas**    | Propostas comerciais com tabela de investimento, normas técnicas, assinatura digital e exportação em PDF                                   |
 
 ## Stack
 
@@ -33,10 +33,21 @@ Sistema de gestão para empresas de manutenção elétrica. Permite gerenciar cl
 # Instalar dependências
 npm install
 
+# Copiar o arquivo de variáveis de ambiente
+cp .env.example .env
+
 # Iniciar servidor de desenvolvimento (porta 5173)
 # O proxy redireciona /api → http://localhost:3001
 npm run dev
 ```
+
+Em desenvolvimento, `VITE_API_URL` pode ficar vazio — o proxy do Vite cuida do redirecionamento para `http://localhost:3001`.
+
+## Variáveis de ambiente
+
+| Variável       | Obrigatória em prod | Descrição                                                                            |
+| -------------- | ------------------- | ------------------------------------------------------------------------------------ |
+| `VITE_API_URL` | Sim                 | URL base do backend sem barra final. Ex: `https://ensaio-eletrico-api.onrender.com` |
 
 ## Build
 
@@ -46,69 +57,79 @@ npm run build
 
 Os arquivos estáticos são gerados em `dist/`.
 
+---
+
 ## Deploy no Render
 
-### 1. Backend (Web Service)
+### Passo 1 — Subir o backend (Web Service)
 
-> Configure o backend primeiro, pois o frontend precisa da URL da API.
+> Configure o backend **antes** do frontend, pois você precisará da URL gerada.
 
-No painel do Render, crie um **Web Service** apontando para o repositório do backend e configure:
+1. Acesse [render.com](https://render.com) e clique em **New → Web Service**
+2. Conecte o repositório do backend (GitHub)
+3. Preencha as configurações:
 
-| Campo | Valor |
-|-------|-------|
-| Build Command | `npm install` |
-| Start Command | `node index.js` (ou o entrypoint do seu backend) |
-| Environment | Node |
+   | Campo             | Valor                                                           |
+   | ----------------- | --------------------------------------------------------------- |
+   | **Name**          | `ensaio-eletrico-api`                                           |
+   | **Environment**   | `Node`                                                          |
+   | **Build Command** | `npm install`                                                   |
+   | **Start Command** | `node index.js` *(ajuste para o entrypoint do seu backend)*     |
 
-Adicione as variáveis de ambiente necessárias pelo backend (ex: `MONGODB_URI`, `JWT_SECRET`, `SMTP_*`).
+4. Em **Environment Variables**, adicione:
 
-Anote a URL gerada, ex: `https://ensaio-eletrico-api.onrender.com`.
+   | Variável      | Descrição                                       |
+   | ------------- | ----------------------------------------------- |
+   | `MONGODB_URI` | String de conexão do MongoDB Atlas              |
+   | `JWT_SECRET`  | Chave secreta para assinar os tokens JWT        |
+   | `SMTP_HOST`   | Host do servidor de e-mail                     |
+   | `SMTP_PORT`   | Porta SMTP (ex: `587`)                         |
+   | `SMTP_USER`   | Usuário/e-mail de envio                        |
+   | `SMTP_PASS`   | Senha ou app password do e-mail                |
+
+5. Clique em **Create Web Service** e aguarde o deploy concluir
+6. **Anote a URL gerada**, ex: `https://ensaio-eletrico-api.onrender.com`
 
 ---
 
-### 2. Frontend (Static Site)
+### Passo 2 — Subir o frontend (Static Site)
 
-No painel do Render, crie um **Static Site** apontando para **este repositório** e configure:
+1. No Render, clique em **New → Static Site**
+2. Conecte **este repositório** (ensaio-eletrico-web)
+3. Preencha as configurações:
 
-| Campo | Valor |
-|-------|-------|
-| Build Command | `npm install && npm run build` |
-| Publish Directory | `dist` |
+   | Campo                  | Valor                          |
+   | ---------------------- | ------------------------------ |
+   | **Name**               | `ensaio-eletrico-web`          |
+   | **Build Command**      | `npm install && npm run build` |
+   | **Publish Directory**  | `dist`                         |
 
-#### Variável de ambiente obrigatória
+4. Em **Environment Variables**, adicione:
 
-| Variável | Valor |
-|----------|-------|
-| `VITE_API_URL` | URL do backend, ex: `https://ensaio-eletrico-api.onrender.com` |
+   | Variável       | Valor                                                              |
+   | -------------- | ------------------------------------------------------------------ |
+   | `VITE_API_URL` | URL do backend do Passo 1. Ex: `https://ensaio-eletrico-api.onrender.com` |
 
-> **Importante:** O `vite.config.ts` atual usa proxy apenas para desenvolvimento local. Em produção, o cliente Axios precisa apontar para a URL real do backend. Veja a seção abaixo.
+5. Clique em **Create Static Site** e aguarde o build
 
-#### Ajuste do cliente HTTP para produção
+> O arquivo `public/_redirects` já está configurado no repositório para garantir que o React Router funcione corretamente — todas as rotas são redirecionadas para o `index.html`.
 
-Edite [src/api/client.ts](src/api/client.ts) para usar a variável de ambiente:
+---
 
-```ts
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL
-    ? `${import.meta.env.VITE_API_URL}/api`
-    : '/api',
-  headers: { 'Content-Type': 'application/json' },
-})
-```
+### Passo 3 — Verificar
 
-#### Roteamento SPA (Redirect Rules)
+Acesse a URL do Static Site gerada pelo Render e confirme:
 
-Como a aplicação usa React Router, configure o redirect no Render para que todas as rotas sejam servidas pelo `index.html`. Crie o arquivo `public/_redirects`:
-
-```
-/*  /index.html  200
-```
+- [ ] Tela de login carrega
+- [ ] Login funciona (autentica com o backend)
+- [ ] Dashboard exibe dados
+- [ ] Navegação entre páginas não retorna 404
 
 ---
 
 ## Estrutura de pastas
 
-```
+```text
 src/
 ├── api/          # Chamadas HTTP (axios)
 ├── components/
