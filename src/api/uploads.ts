@@ -1,0 +1,10 @@
+import api from './client'
+
+export async function uploadImagem(file: File): Promise<string> {
+  const form = new FormData()
+  form.append('file', file)
+  const { data } = await api.post<{ url: string }>('/uploads', form, {
+    headers: { 'Content-Type': undefined },
+  })
+  return data.url
+}
