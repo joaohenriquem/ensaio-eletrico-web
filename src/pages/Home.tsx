@@ -9,7 +9,7 @@ function MetricCard({ label, value, color = '#f0a500' }: { label: string; value:
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm" style={{ borderLeft: `4px solid ${color}` }}>
       <p className="text-sm text-gray-500">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-[#1c1c2e]">{value}</p>
+      <p className="mt-1 text-2xl font-bold text-[#1e3050]">{value}</p>
     </div>
   )
 }
@@ -20,7 +20,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="rounded-xl bg-gradient-to-r from-[#1c1c2e] to-[#2a2a42] p-6 text-white">
+      <div className="rounded-xl bg-gradient-to-r from-[#1e3050] to-[#2a4570] p-6 text-white">
         <div className="flex items-center gap-3">
           <Zap size={32} className="text-[#f0a500]" />
           <div>

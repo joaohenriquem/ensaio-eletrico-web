@@ -182,7 +182,7 @@ function NovaPropostaForm({ onSuccess, editData }: { onSuccess: () => void; edit
             </div>
           ))}
           {itens.length > 0 && (
-            <div className="flex justify-end rounded bg-gray-200 px-3 py-2 font-bold text-[#1c1c2e]">
+            <div className="flex justify-end rounded bg-gray-200 px-3 py-2 font-bold text-[#1e3050]">
               TOTAL: {formatarMoeda(total)}
             </div>
           )}
@@ -273,7 +273,7 @@ function ListaPropostas({ onEditar }: { onEditar: (p: Proposta) => void }) {
       {isLoading ? <p className="text-sm text-gray-400">Carregando...</p> : (
         <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
           <table className="w-full text-sm">
-            <thead className="bg-[#1c1c2e] text-white">
+            <thead className="bg-[#1e3050] text-white">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-semibold">Nº</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold">Cliente</th>
@@ -359,7 +359,7 @@ export default function Propostas() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold text-[#1c1c2e]">Propostas Comerciais</h1>
+      <h1 className="text-xl font-bold text-[#1e3050]">Propostas Comerciais</h1>
       <Tabs
         tabs={[
           { label: '📋 Lista de Propostas', content: <ListaPropostas onEditar={handleEditar} /> },

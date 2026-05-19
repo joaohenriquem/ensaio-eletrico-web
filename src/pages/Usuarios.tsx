@@ -87,7 +87,7 @@ export default function Usuarios() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <div className="flex items-center gap-3">
-        <div className="rounded-xl bg-[#1c1c2e] p-2.5">
+        <div className="rounded-xl bg-[#1e3050] p-2.5">
           <Users size={20} className="text-[#f0a500]" />
         </div>
         <div>
@@ -110,7 +110,7 @@ export default function Usuarios() {
             onClick={() => setFiltro(f)}
             className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
               filtro === f
-                ? 'bg-[#1c1c2e] text-white'
+                ? 'bg-[#1e3050] text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -133,7 +133,7 @@ export default function Usuarios() {
               key={u.id}
               className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1c1c2e] text-sm font-bold text-[#f0a500]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1e3050] text-sm font-bold text-[#f0a500]">
                 {u.nome.charAt(0).toUpperCase()}
               </div>
 

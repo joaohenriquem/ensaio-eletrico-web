@@ -58,7 +58,7 @@ export default function SignaturePad({ value, onChange, label = 'Assinatura' }: 
     if (!drawing.current) return
     const canvas = canvasRef.current!
     const ctx = canvas.getContext('2d')!
-    ctx.strokeStyle = '#1c1c2e'
+    ctx.strokeStyle = '#1e3050'
     ctx.lineWidth = 2
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'

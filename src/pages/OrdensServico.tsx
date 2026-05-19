@@ -240,7 +240,7 @@ function ListaOS({ onEditar }: { onEditar: (os: OrdemServico) => void }) {
       {isLoading ? <p className="text-sm text-gray-400">Carregando...</p> : (
         <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
           <table className="w-full text-sm">
-            <thead className="bg-[#1c1c2e] text-white">
+            <thead className="bg-[#1e3050] text-white">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-semibold">Nº</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold">Cliente</th>
@@ -367,7 +367,7 @@ export default function OrdensServico() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold text-[#1c1c2e]">Ordens de Serviço</h1>
+      <h1 className="text-xl font-bold text-[#1e3050]">Ordens de Serviço</h1>
       <Tabs
         tabs={[
           { label: '📋 Lista de OS', content: <ListaOS onEditar={handleEditar} /> },

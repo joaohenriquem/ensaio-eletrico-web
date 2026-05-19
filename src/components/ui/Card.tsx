@@ -11,7 +11,7 @@ export default function Card({ title, children, className, ...props }: Props) {
       className={cn('rounded-xl border border-gray-200 bg-white p-5 shadow-sm', className)}
       {...props}
     >
-      {title && <h3 className="mb-4 font-semibold text-[#1c1c2e]">{title}</h3>}
+      {title && <h3 className="mb-4 font-semibold text-[#1e3050]">{title}</h3>}
       {children}
     </div>
   )

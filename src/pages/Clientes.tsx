@@ -79,7 +79,7 @@ function ClienteRow({ cliente }: { cliente: Cliente }) {
         className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
       >
         <div>
-          <p className="font-medium text-[#1c1c2e]">{cliente.nome}</p>
+          <p className="font-medium text-[#1e3050]">{cliente.nome}</p>
           <p className="text-xs text-gray-500">{cliente.cidade} – {cliente.estado}</p>
         </div>
         {open ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
@@ -159,7 +159,7 @@ export default function Clientes() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold text-[#1c1c2e]">Clientes</h1>
+      <h1 className="text-xl font-bold text-[#1e3050]">Clientes</h1>
       <Tabs
         tabs={[
           { label: '📋 Lista de Clientes', content: <ListaClientes /> },

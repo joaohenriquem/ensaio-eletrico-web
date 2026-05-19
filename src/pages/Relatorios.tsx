@@ -286,7 +286,7 @@ function NovoRelatorioForm({ onSuccess, editData }: { onSuccess: () => void; edi
       </Card>
 
       <div className="flex items-center gap-2">
-        <h3 className="font-semibold text-[#1c1c2e]">Painéis Elétricos ({paineis.length})</h3>
+        <h3 className="font-semibold text-[#1e3050]">Painéis Elétricos ({paineis.length})</h3>
         <Button size="sm" onClick={addPainel}><Plus size={14} /> Adicionar</Button>
         <Button size="sm" variant="secondary" onClick={removePainel} disabled={paineis.length <= 1}>
           <Trash2 size={14} /> Remover Último
@@ -381,7 +381,7 @@ function ListaRelatorios({ onEditar }: { onEditar: (rel: Relatorio) => void }) {
       {isLoading ? <p className="text-sm text-gray-400">Carregando...</p> : (
         <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
           <table className="w-full text-sm">
-            <thead className="bg-[#1c1c2e] text-white">
+            <thead className="bg-[#1e3050] text-white">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-semibold">Nº</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold">Cliente</th>
@@ -451,7 +451,7 @@ export default function Relatorios() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold text-[#1c1c2e]">Relatórios de Manutenção</h1>
+      <h1 className="text-xl font-bold text-[#1e3050]">Relatórios de Manutenção</h1>
       <Tabs
         tabs={[
           { label: '📋 Lista', content: <ListaRelatorios onEditar={handleEditar} /> },

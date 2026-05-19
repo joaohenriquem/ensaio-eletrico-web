@@ -60,7 +60,7 @@ export default function Sidebar({ nome, perfil, onLogout, open, onClose, collaps
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-30 flex h-screen flex-col bg-[#1c1c2e] text-white shadow-xl transition-all duration-300 lg:relative lg:translate-x-0 lg:z-auto w-64',
+          'fixed inset-y-0 left-0 z-30 flex h-screen flex-col bg-[#1e3050] text-white shadow-xl transition-all duration-300 lg:relative lg:translate-x-0 lg:z-auto w-64',
           open ? 'translate-x-0' : '-translate-x-full',
           collapsed && 'lg:w-16'
         )}

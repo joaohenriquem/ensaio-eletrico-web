@@ -34,7 +34,7 @@ export default function Layout({ children }: Props) {
           >
             <Menu size={22} />
           </button>
-          <span className="text-sm font-semibold text-[#1c1c2e]">Ensaio Elétrico</span>
+          <span className="text-sm font-semibold text-[#1e3050]">Ensaio Elétrico</span>
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>

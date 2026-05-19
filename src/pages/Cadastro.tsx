@@ -60,7 +60,7 @@ export default function Cadastro() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#1c1c2e] p-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#1e3050] p-4">
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-2xl">
         <div className="mb-6 text-center">
           <img src={logo} alt="Ensaio Elétrico" className="mx-auto mb-4 h-28 w-auto" />
