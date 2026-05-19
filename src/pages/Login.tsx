@@ -1,29 +1,67 @@
-import { useState, type FormEvent } from 'react'
+import { useState, useRef, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router'
-import { login } from '../api/auth'
+import { login, verifyOtp } from '../api/auth'
 import { useAuth } from '../hooks/useAuth'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import logo from '../static/logo.jpeg'
 
+function getGeolocalizacao(): Promise<{ latitude: number; longitude: number } | null> {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) return resolve(null)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+      () => resolve(null),
+      { timeout: 5000 }
+    )
+  })
+}
+
 export default function Login() {
   const { login: saveAuth } = useAuth()
   const navigate = useNavigate()
+
+  const [step, setStep] = useState<'credentials' | 'otp'>('credentials')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [otp, setOtp] = useState('')
+  const [userId, setUserId] = useState('')
+  const [emailHint, setEmailHint] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const geoRef = useRef<{ latitude: number; longitude: number } | null>(null)
 
-  async function handleSubmit(e: FormEvent) {
+  async function handleCredentials(e: FormEvent) {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      const { token, user } = await login(username, password)
+      const geo = await getGeolocalizacao()
+      geoRef.current = geo
+      const res = await login(username, password)
+      setUserId(res.userId)
+      setEmailHint(res.email)
+      setStep('otp')
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+      setError(msg ?? 'Usuário ou senha inválidos.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleOtp(e: FormEvent) {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      const geo = geoRef.current
+      const { token, user } = await verifyOtp(userId, otp.trim(), geo?.latitude, geo?.longitude)
       saveAuth(token, user)
       navigate('/')
-    } catch {
-      setError('Usuário ou senha inválidos.')
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+      setError(msg ?? 'Código inválido ou expirado.')
     } finally {
       setLoading(false)
     }
@@ -37,45 +75,76 @@ export default function Login() {
           <p className="mt-1 text-sm text-gray-500">Sistema de Gestão Operacional</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <Input
-            label="Usuário"
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="admin"
-            autoFocus
-            required
-          />
-          <Input
-            label="Senha"
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-          />
+        {step === 'credentials' ? (
+          <form onSubmit={handleCredentials} className="flex flex-col gap-4">
+            <Input
+              label="Usuário"
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="admin"
+              autoFocus
+              required
+            />
+            <Input
+              label="Senha"
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+            />
 
-          {error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
-          )}
+            {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
-          <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading}>
-            {loading ? 'Entrando...' : 'Entrar'}
-          </Button>
-        </form>
+            <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading}>
+              {loading ? 'Verificando...' : 'Continuar'}
+            </Button>
 
-        <p className="mt-4 text-center text-sm text-gray-500">
-          Não tem acesso?{' '}
-          <Link to="/cadastro" className="font-medium text-[#f0a500] hover:underline">
-            Solicitar cadastro
-          </Link>
-        </p>
+            <p className="text-center text-sm text-gray-500">
+              Não tem acesso?{' '}
+              <Link to="/cadastro" className="font-medium text-[#f0a500] hover:underline">
+                Solicitar cadastro
+              </Link>
+            </p>
+          </form>
+        ) : (
+          <form onSubmit={handleOtp} className="flex flex-col gap-4">
+            <div className="rounded-lg bg-blue-50 px-4 py-3 text-center text-sm text-blue-700">
+              Enviamos um código de 6 dígitos para<br />
+              <strong>{emailHint}</strong>
+            </div>
 
-        <p className="mt-3 text-center text-xs text-gray-400">
-          v2.0 · Ensaio Elétrico © 2026
-        </p>
+            <Input
+              label="Código de verificação"
+              id="otp"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              placeholder="000000"
+              autoFocus
+              required
+              maxLength={6}
+              className="text-center text-2xl tracking-[0.5em] font-bold"
+            />
+
+            {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+
+            <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading || otp.length < 6}>
+              {loading ? 'Verificando...' : 'Entrar'}
+            </Button>
+
+            <button
+              type="button"
+              onClick={() => { setStep('credentials'); setOtp(''); setError('') }}
+              className="text-center text-sm text-gray-400 hover:text-gray-600"
+            >
+              Voltar e tentar novamente
+            </button>
+          </form>
+        )}
+
+        <p className="mt-6 text-center text-xs text-gray-400">v2.0 · Ensaio Elétrico © 2026</p>
       </div>
     </div>
   )

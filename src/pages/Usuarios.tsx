@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { CheckCircle, XCircle, Clock, Users, ShieldCheck } from 'lucide-react'
-import { listarUsuarios, aprovarUsuario, rejeitarUsuario } from '../api/auth'
-import type { UsuarioAdmin } from '../types'
+import { CheckCircle, XCircle, Clock, Users, ShieldCheck, MapPin, History } from 'lucide-react'
+import { listarUsuarios, aprovarUsuario, rejeitarUsuario, listarLoginLogs } from '../api/auth'
+import type { UsuarioAdmin, LoginLog } from '../types'
 import Button from '../components/ui/Button'
 import { useAuth } from '../hooks/useAuth'
 import { Navigate } from 'react-router'
@@ -202,6 +202,59 @@ export default function Usuarios() {
           onConfirm={(motivo) => mutRejeitar.mutate({ id: rejeitando.id, motivo })}
           onCancel={() => setRejeitando(null)}
         />
+      )}
+
+      <LoginLogsSection />
+    </div>
+  )
+}
+
+function LoginLogsSection() {
+  const { data: logs = [], isLoading } = useQuery({
+    queryKey: ['login-logs'],
+    queryFn: listarLoginLogs,
+  })
+
+  function formatData(iso: string) {
+    return new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <History size={16} className="text-gray-500" />
+        <h2 className="font-semibold text-gray-800">Histórico de Logins</h2>
+      </div>
+
+      {isLoading ? (
+        <p className="text-sm text-gray-400">Carregando...</p>
+      ) : logs.length === 0 ? (
+        <p className="text-sm text-gray-400">Nenhum login registrado ainda.</p>
+      ) : (
+        <div className="space-y-2">
+          {logs.map((log) => (
+            <div key={log.id} className="flex items-start gap-3 rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+              <div className="mt-0.5 shrink-0 rounded-full bg-green-100 p-1.5">
+                <ShieldCheck size={14} className="text-green-600" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-gray-900">{log.usuario_nome}</p>
+                {log.endereco && (
+                  <p className="flex items-center gap-1 text-xs text-gray-500">
+                    <MapPin size={11} /> {log.endereco}
+                  </p>
+                )}
+                {!log.endereco && log.latitude && (
+                  <p className="text-xs text-gray-400">{log.latitude?.toFixed(4)}, {log.longitude?.toFixed(4)}</p>
+                )}
+                {!log.endereco && !log.latitude && (
+                  <p className="text-xs text-gray-400">Localização não disponível</p>
+                )}
+              </div>
+              <span className="shrink-0 text-xs text-gray-400">{formatData(log.criado_em)}</span>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   )

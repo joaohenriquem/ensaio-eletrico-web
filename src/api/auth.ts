@@ -1,8 +1,13 @@
 import api from './client'
-import type { LoginResponse, UsuarioAdmin } from '../types'
+import type { LoginResponse, MfaResponse, UsuarioAdmin, LoginLog } from '../types'
 
-export async function login(username: string, password: string): Promise<LoginResponse> {
-  const { data } = await api.post<LoginResponse>('/auth/login', { username, password })
+export async function login(username: string, password: string): Promise<MfaResponse> {
+  const { data } = await api.post<MfaResponse>('/auth/login', { username, password })
+  return data
+}
+
+export async function verifyOtp(userId: string, otp: string, latitude?: number, longitude?: number): Promise<LoginResponse> {
+  const { data } = await api.post<LoginResponse>('/auth/verify-otp', { userId, otp, latitude, longitude })
   return data
 }
 
@@ -30,4 +35,9 @@ export async function aprovarUsuario(id: string): Promise<void> {
 
 export async function rejeitarUsuario(id: string, motivo?: string): Promise<void> {
   await api.put(`/auth/usuarios/${id}/rejeitar`, { motivo })
+}
+
+export async function listarLoginLogs(): Promise<LoginLog[]> {
+  const { data } = await api.get<LoginLog[]>('/auth/login-logs')
+  return data
 }

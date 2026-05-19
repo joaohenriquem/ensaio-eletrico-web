@@ -149,3 +149,18 @@ export interface LoginResponse {
   token: string
   user: Usuario
 }
+
+export interface MfaResponse {
+  requiresMfa: true
+  userId: string
+  email: string
+}
+
+export interface LoginLog {
+  id: string
+  usuario_nome: string
+  latitude?: number
+  longitude?: number
+  endereco?: string
+  criado_em: string
+}
