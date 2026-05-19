@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from 'react-router'
+import { useEffect, useState } from 'react'
 import {
   LayoutDashboard,
   Users,
@@ -42,6 +43,13 @@ export default function Sidebar({ nome, perfil, onLogout, open, onClose, collaps
   const navigate = useNavigate()
   const isAdmin = perfil === 'Administrador' || perfil === 'Admin'
   const nav = isAdmin ? [...navBase, ...navAdmin] : navBase
+  const [spinning, setSpinning] = useState(false)
+
+  useEffect(() => {
+    setSpinning(true)
+    const t = setTimeout(() => setSpinning(false), 500)
+    return () => clearTimeout(t)
+  }, [collapsed])
 
   const handleLogout = () => {
     onLogout()
@@ -85,7 +93,11 @@ export default function Sidebar({ nome, perfil, onLogout, open, onClose, collaps
           <img
             src={logo}
             alt="Ensaio Elétrico"
-            className={cn('w-auto transition-all duration-300', collapsed ? 'lg:h-9' : 'h-20')}
+            className={cn(
+              'w-auto transition-[height,width] duration-300',
+              collapsed ? 'lg:h-9' : 'h-20',
+              spinning && 'animate-[spin_0.5s_ease-in-out]'
+            )}
           />
 
           {/* Mobile close */}
