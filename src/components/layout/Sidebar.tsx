@@ -40,7 +40,8 @@ interface Props {
 
 export default function Sidebar({ nome, perfil, onLogout, open, onClose, collapsed, onToggleCollapse }: Props) {
   const navigate = useNavigate()
-  const nav = perfil === 'Administrador' ? [...navBase, ...navAdmin] : navBase
+  const isAdmin = perfil === 'Administrador' || perfil === 'Admin'
+  const nav = isAdmin ? [...navBase, ...navAdmin] : navBase
 
   const handleLogout = () => {
     onLogout()

@@ -58,7 +58,7 @@ export default function Usuarios() {
   const [rejeitando, setRejeitando] = useState<UsuarioAdmin | null>(null)
   const [filtro, setFiltro] = useState<'todos' | 'pendente' | 'aprovado' | 'rejeitado'>('todos')
 
-  if (user?.perfil !== 'Administrador') {
+  if (user?.perfil !== 'Administrador' && user?.perfil !== 'Admin') {
     return <Navigate to="/" replace />
   }
 
