@@ -67,7 +67,19 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#1e3050] p-4">
+    <div className="relative flex min-h-screen items-center justify-center p-4 overflow-hidden">
+      {/* Video background */}
+      <div className="absolute inset-0 -z-10">
+        <iframe
+          src="https://www.youtube.com/embed/XmjLMHPKJ1w?autoplay=1&mute=1&loop=1&playlist=XmjLMHPKJ1w&controls=0&showinfo=0&rel=0&disablekb=1&modestbranding=1&iv_load_policy=3"
+          allow="autoplay; encrypted-media"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+          style={{ width: '177.78vh', height: '100vh', minWidth: '100%', minHeight: '56.25vw', border: 'none', pointerEvents: 'none' }}
+        />
+        {/* Overlay escuro */}
+        <div className="absolute inset-0 bg-[#1e3050]/70" />
+      </div>
+
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-2xl">
         <div className="mb-8 text-center">
           <img src={logo} alt="Ensaio Elétrico" className="mx-auto mb-4 h-36 w-auto" />
