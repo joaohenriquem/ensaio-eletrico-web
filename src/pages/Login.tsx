@@ -4,7 +4,7 @@ import { login } from '../api/auth'
 import { useAuth } from '../hooks/useAuth'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
-import logo from '../static/logo.jpeg'
+import logo from '../static/logo.png'
 
 export default function Login() {
   const { login: saveAuth } = useAuth()
