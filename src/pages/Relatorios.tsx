@@ -150,6 +150,10 @@ function PainelForm({
                 )
               })}
             </div>
+            <ImageUpload
+              fotos={painel.fotos_verificacao_eletrica ?? []}
+              onChange={(fotos) => onChange({ ...painel, fotos_verificacao_eletrica: fotos })}
+            />
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

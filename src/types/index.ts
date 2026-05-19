@@ -72,6 +72,7 @@ export interface Painel {
   fotos_inspecao_visual?: string[]
   fotos_limpeza_tecnica?: string[]
   fotos_reaperto_mecanico?: string[]
+  fotos_verificacao_eletrica?: string[]
 }
 
 export interface Relatorio {
