@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { ImagePlus, Loader2, X } from 'lucide-react'
 import { uploadImagem } from '../../api/uploads'
 
@@ -30,7 +30,6 @@ function redimensionarParaBlob(file: File, maxWidth = 1024): Promise<File> {
 }
 
 export default function ImageUpload({ fotos, onChange, max = 2 }: Props) {
-  const inputRef = useRef<HTMLInputElement>(null)
   const [carregando, setCarregando] = useState(false)
 
   async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
@@ -76,27 +75,23 @@ export default function ImageUpload({ fotos, onChange, max = 2 }: Props) {
       ))}
 
       {fotos.length < max && (
-        <>
-          <button
-            onClick={() => inputRef.current?.click()}
-            disabled={carregando}
-            className="flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-gray-300 text-gray-400 hover:border-[#f0a500] hover:text-[#f0a500] transition disabled:opacity-50"
-          >
-            {carregando
-              ? <Loader2 size={20} className="animate-spin" />
-              : <ImagePlus size={20} />
-            }
-            <span className="text-xs">{carregando ? 'Enviando...' : 'Foto'}</span>
-          </button>
+        <label
+          className={`flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-gray-300 text-gray-400 hover:border-[#f0a500] hover:text-[#f0a500] transition ${carregando ? 'pointer-events-none opacity-50' : ''}`}
+        >
+          {carregando
+            ? <Loader2 size={20} className="animate-spin" />
+            : <ImagePlus size={20} />
+          }
+          <span className="text-xs">{carregando ? 'Enviando...' : 'Foto'}</span>
           <input
-            ref={inputRef}
             type="file"
             accept="image/*"
             multiple={max - fotos.length > 1}
-            className="hidden"
+            className="absolute h-px w-px overflow-hidden opacity-0"
+            disabled={carregando}
             onChange={handleFiles}
           />
-        </>
+        </label>
       )}
     </div>
   )
