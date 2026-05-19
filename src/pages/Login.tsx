@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, Link } from 'react-router'
 import { login } from '../api/auth'
 import { useAuth } from '../hooks/useAuth'
 import Button from '../components/ui/Button'
@@ -66,7 +66,14 @@ export default function Login() {
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-xs text-gray-400">
+        <p className="mt-4 text-center text-sm text-gray-500">
+          Não tem acesso?{' '}
+          <Link to="/cadastro" className="font-medium text-[#f0a500] hover:underline">
+            Solicitar cadastro
+          </Link>
+        </p>
+
+        <p className="mt-3 text-center text-xs text-gray-400">
           v2.0 · Ensaio Elétrico © 2026
         </p>
       </div>

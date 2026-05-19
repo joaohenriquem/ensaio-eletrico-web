@@ -10,17 +10,22 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  ShieldCheck,
 } from 'lucide-react'
 import { cn } from '../../utils/cn'
 import logo from '../../static/logo.jpeg'
 
-const nav = [
+const navBase = [
   { to: '/', label: 'Início', icon: Zap, exact: true },
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, exact: false },
   { to: '/clientes', label: 'Clientes', icon: Users, exact: false },
   { to: '/ordens', label: 'Ordens de Serviço', icon: ClipboardList, exact: false },
   { to: '/relatorios', label: 'Relatórios de Manutenção', icon: Wrench, exact: false },
   { to: '/propostas', label: 'Propostas Comerciais', icon: FileText, exact: false },
+]
+
+const navAdmin = [
+  { to: '/usuarios', label: 'Usuários', icon: ShieldCheck, exact: false },
 ]
 
 interface Props {
@@ -35,6 +40,7 @@ interface Props {
 
 export default function Sidebar({ nome, perfil, onLogout, open, onClose, collapsed, onToggleCollapse }: Props) {
   const navigate = useNavigate()
+  const nav = perfil === 'Administrador' ? [...navBase, ...navAdmin] : navBase
 
   const handleLogout = () => {
     onLogout()

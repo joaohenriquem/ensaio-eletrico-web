@@ -5,6 +5,8 @@ import { AuthContext, type AuthContextValue } from './hooks/useAuth'
 import type { Usuario } from './types'
 import Layout from './components/layout/Layout'
 import Login from './pages/Login'
+import Cadastro from './pages/Cadastro'
+import Usuarios from './pages/Usuarios'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import Clientes from './pages/Clientes'
@@ -60,7 +62,9 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/cadastro" element={<Cadastro />} />
             <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+            <Route path="/usuarios" element={<PrivateRoute><Usuarios /></PrivateRoute>} />
             <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
             <Route path="/clientes" element={<PrivateRoute><Clientes /></PrivateRoute>} />
             <Route path="/ordens" element={<PrivateRoute><OrdensServico /></PrivateRoute>} />

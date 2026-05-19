@@ -5,6 +5,16 @@ export interface Usuario {
   perfil: string
 }
 
+export interface UsuarioAdmin {
+  id: string
+  nome: string
+  email: string
+  username: string
+  perfil: string
+  status: 'pendente' | 'aprovado' | 'rejeitado'
+  criado_em?: string
+}
+
 export interface Cliente {
   _id: string
   nome: string
