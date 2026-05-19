@@ -95,7 +95,7 @@ export default function Login() {
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="admin"
+              placeholder=""
               autoFocus
               required
             />
