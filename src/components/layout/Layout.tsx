@@ -14,7 +14,7 @@ export default function Layout({ children }: Props) {
   const [collapsed, setCollapsed] = useState(false)
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50">
       <Sidebar
         nome={user?.nome ?? ''}
         perfil={user?.perfil ?? ''}
@@ -25,9 +25,9 @@ export default function Layout({ children }: Props) {
         onToggleCollapse={() => setCollapsed(c => !c)}
       />
 
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col">
         {/* Top bar mobile */}
-        <header className="flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-3 lg:hidden">
+        <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-3 lg:hidden">
           <button
             onClick={() => setSidebarOpen(true)}
             className="rounded-lg p-1.5 text-gray-600 hover:bg-gray-100"
@@ -37,7 +37,7 @@ export default function Layout({ children }: Props) {
           <span className="text-sm font-semibold text-[#1e3050]">Ensaio Elétrico</span>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
+        <main className="p-4 lg:p-6">{children}</main>
       </div>
     </div>
   )
