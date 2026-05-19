@@ -14,7 +14,7 @@ import {
   ShieldCheck,
 } from 'lucide-react'
 import { cn } from '../../utils/cn'
-import logo from '../../static/logo.jpeg'
+import logo from '../../static/logo_ensaio_eletrico.png'
 
 const navBase = [
   { to: '/', label: 'Início', icon: Zap, exact: true },
@@ -94,7 +94,7 @@ export default function Sidebar({ nome, perfil, onLogout, open, onClose, collaps
             src={logo}
             alt="Ensaio Elétrico"
             className={cn(
-              'w-auto transition-[height,width] duration-300',
+              'mx-auto w-auto transition-[height,width] duration-300',
               collapsed ? 'lg:h-9' : 'h-20',
               spinning && 'animate-[spin_0.5s_ease-in-out]'
             )}
