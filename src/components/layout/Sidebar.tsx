@@ -90,15 +90,20 @@ export default function Sidebar({ nome, perfil, onLogout, open, onClose, collaps
             {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
           </button>
 
-          <img
-            src={logo}
-            alt="Ensaio Elétrico"
-            className={cn(
-              'w-auto transition-[height,width] duration-300',
-              collapsed ? 'lg:h-9' : 'h-20',
-              spinning && 'animate-[spin_0.5s_ease-in-out]'
-            )}
-          />
+          <div className={cn(
+            'flex items-center justify-center rounded-2xl bg-white/20 transition-all duration-300',
+            collapsed ? 'lg:p-1.5' : 'p-3'
+          )}>
+            <img
+              src={logo}
+              alt="Ensaio Elétrico"
+              className={cn(
+                'w-auto transition-[height,width] duration-300',
+                collapsed ? 'lg:h-9' : 'h-20',
+                spinning && 'animate-[spin_0.5s_ease-in-out]'
+              )}
+            />
+          </div>
 
           {/* Mobile close */}
           <button onClick={onClose} className="rounded p-1 text-white/50 hover:text-white lg:hidden">
