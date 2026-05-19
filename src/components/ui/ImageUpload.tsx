@@ -76,7 +76,7 @@ export default function ImageUpload({ fotos, onChange, max = 2 }: Props) {
 
       {fotos.length < max && (
         <label
-          className={`flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-gray-300 text-gray-400 hover:border-[#f0a500] hover:text-[#f0a500] transition ${carregando ? 'pointer-events-none opacity-50' : ''}`}
+          className={`relative flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-gray-300 text-gray-400 hover:border-[#f0a500] hover:text-[#f0a500] transition ${carregando ? 'pointer-events-none opacity-50' : ''}`}
         >
           {carregando
             ? <Loader2 size={20} className="animate-spin" />
@@ -87,9 +87,9 @@ export default function ImageUpload({ fotos, onChange, max = 2 }: Props) {
             type="file"
             accept="image/*"
             multiple={max - fotos.length > 1}
-            className="absolute h-px w-px overflow-hidden opacity-0"
             disabled={carregando}
             onChange={handleFiles}
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
           />
         </label>
       )}
