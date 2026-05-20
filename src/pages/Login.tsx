@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router'
+import { Eye, EyeOff } from 'lucide-react'
 import { login, verifyOtp } from '../api/auth'
 import { useAuth } from '../hooks/useAuth'
 import Button from '../components/ui/Button'
@@ -19,6 +20,7 @@ export default function Login() {
   const [emailHint, setEmailHint] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const geoRef = useRef<{ latitude: number; longitude: number } | null>(null)
 
   // Solicita geolocalização assim que a página abre — dá tempo ao usuário aceitar
@@ -99,15 +101,25 @@ export default function Login() {
               autoFocus
               required
             />
-            <Input
-              label="Senha"
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-            />
+            <div className="relative">
+              <Input
+                label="Senha"
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(v => !v)}
+                className="absolute right-3 top-[34px] text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
+            </div>
 
             {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
