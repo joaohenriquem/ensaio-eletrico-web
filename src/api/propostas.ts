@@ -29,3 +29,7 @@ export async function baixarPdfProposta(id: string, numero: string): Promise<voi
   a.click()
   URL.revokeObjectURL(url)
 }
+
+export async function excluirProposta(id: string): Promise<void> {
+  await api.delete(`/propostas/${id}`)
+}

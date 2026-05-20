@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Search, ChevronDown, ChevronUp, Edit2, UserX } from 'lucide-react'
-import { useClientes, useCriarCliente, useAtualizarCliente } from '../hooks/useClientes'
+import { Search, ChevronDown, ChevronUp, Edit2, UserX, Trash2 } from 'lucide-react'
+import { useClientes, useCriarCliente, useAtualizarCliente, useExcluirCliente } from '../hooks/useClientes'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
 import type { Cliente } from '../types'
 import Tabs from '../components/ui/Tabs'
 import Card from '../components/ui/Card'
@@ -55,7 +56,7 @@ function NovoClienteForm({ onSuccess }: { onSuccess: () => void }) {
   )
 }
 
-function ClienteRow({ cliente }: { cliente: Cliente }) {
+function ClienteRow({ cliente, onExcluir }: { cliente: Cliente; onExcluir: () => void }) {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState(false)
   const atualizar = useAtualizarCliente()
@@ -103,6 +104,9 @@ function ClienteRow({ cliente }: { cliente: Cliente }) {
                 <Button variant="danger" size="sm" onClick={desativar}>
                   <UserX size={13} /> Desativar
                 </Button>
+                <Button variant="danger" size="sm" onClick={onExcluir}>
+                  <Trash2 size={13} /> Excluir
+                </Button>
               </div>
             </div>
           ) : (
@@ -127,7 +131,9 @@ function ClienteRow({ cliente }: { cliente: Cliente }) {
 
 function ListaClientes() {
   const [busca, setBusca] = useState('')
+  const [excluirId, setExcluirId] = useState<string | null>(null)
   const { data = [], isLoading } = useClientes({ ativo: true })
+  const excluir = useExcluirCliente()
   const filtrados = data.filter(c =>
     c.nome.toLowerCase().includes(busca.toLowerCase()) ||
     (c.cidade ?? '').toLowerCase().includes(busca.toLowerCase())
@@ -146,9 +152,18 @@ function ListaClientes() {
       </div>
       {isLoading ? <p className="text-sm text-gray-400">Carregando...</p> : (
         <div className="flex flex-col gap-2">
-          {filtrados.map(c => <ClienteRow key={c._id} cliente={c} />)}
+          {filtrados.map(c => <ClienteRow key={c._id} cliente={c} onExcluir={() => setExcluirId(c._id)} />)}
           {filtrados.length === 0 && <p className="text-sm text-gray-400">Nenhum cliente encontrado.</p>}
         </div>
+      )}
+
+      {excluirId && (
+        <ConfirmDialog
+          mensagem="Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita."
+          onConfirm={() => excluir.mutate(excluirId, { onSuccess: () => setExcluirId(null) })}
+          onCancel={() => setExcluirId(null)}
+          loading={excluir.isPending}
+        />
       )}
     </div>
   )

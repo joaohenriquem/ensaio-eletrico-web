@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { listarRelatorios, criarRelatorio, atualizarRelatorio } from '../api/relatorios'
+import { listarRelatorios, criarRelatorio, atualizarRelatorio, excluirRelatorio } from '../api/relatorios'
 import type { Relatorio } from '../types'
 
 export function useRelatorios(params?: { status?: string }) {
@@ -22,6 +22,14 @@ export function useAtualizarRelatorio() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Relatorio> }) =>
       atualizarRelatorio(id, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['relatorios'] }),
+  })
+}
+
+export function useExcluirRelatorio() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => excluirRelatorio(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['relatorios'] }),
   })
 }

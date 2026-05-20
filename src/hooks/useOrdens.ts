@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { listarOrdens, criarOrdem, atualizarOrdem, enviarEmailOS } from '../api/ordens'
+import { listarOrdens, criarOrdem, atualizarOrdem, enviarEmailOS, excluirOrdem } from '../api/ordens'
 import type { OrdemServico } from '../types'
 
 export function useOrdens(params?: { status?: string; tipo?: string; cliente?: string }) {
@@ -30,5 +30,13 @@ export function useEnviarEmailOS() {
   return useMutation({
     mutationFn: ({ id, destinatario, tipo }: { id: string; destinatario: string; tipo: 'aprovacao' | 'conclusao' }) =>
       enviarEmailOS(id, destinatario, tipo),
+  })
+}
+
+export function useExcluirOrdem() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => excluirOrdem(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['ordens'] }),
   })
 }

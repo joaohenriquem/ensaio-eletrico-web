@@ -22,3 +22,7 @@ export async function atualizarOrdem(id: string, payload: Partial<OrdemServico> 
 export async function enviarEmailOS(id: string, destinatario: string, tipo: 'aprovacao' | 'conclusao'): Promise<void> {
   await api.post(`/ordens/${id}/email`, { destinatario, tipo })
 }
+
+export async function excluirOrdem(id: string): Promise<void> {
+  await api.delete(`/ordens/${id}`)
+}

@@ -14,3 +14,7 @@ export async function criarCliente(payload: Omit<Cliente, '_id' | 'criado_em'>):
 export async function atualizarCliente(id: string, payload: Partial<Cliente>): Promise<void> {
   await api.put(`/clientes/${id}`, payload)
 }
+
+export async function excluirCliente(id: string): Promise<void> {
+  await api.delete(`/clientes/${id}`)
+}

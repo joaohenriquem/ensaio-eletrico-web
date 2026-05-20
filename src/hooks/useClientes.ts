@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { listarClientes, criarCliente, atualizarCliente } from '../api/clientes'
+import { listarClientes, criarCliente, atualizarCliente, excluirCliente } from '../api/clientes'
 import type { Cliente } from '../types'
 
 export function useClientes(params?: { ativo?: boolean; busca?: string }) {
@@ -22,6 +22,14 @@ export function useAtualizarCliente() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Cliente> }) =>
       atualizarCliente(id, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['clientes'] }),
+  })
+}
+
+export function useExcluirCliente() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => excluirCliente(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['clientes'] }),
   })
 }

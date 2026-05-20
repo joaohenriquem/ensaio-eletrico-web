@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Plus, Trash2, Download, Pencil } from 'lucide-react'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
+import { useExcluirProposta } from '../hooks/usePropostas'
 import ImageUpload from '../components/ui/ImageUpload'
 import { usePropostas, useCriarProposta, useAtualizarProposta } from '../hooks/usePropostas'
 import { useClientes } from '../hooks/useClientes'
@@ -246,7 +248,9 @@ function ListaPropostas({ onEditar }: { onEditar: (p: Proposta) => void }) {
   const [filtroBusca, setFiltroBusca] = useState('')
   const [editId, setEditId] = useState<string | null>(null)
   const [novoStatus, setNovoStatus] = useState('')
+  const [excluirId, setExcluirId] = useState<string | null>(null)
   const atualizar = useAtualizarProposta()
+  const excluir = useExcluirProposta()
 
   const { data: propostas = [], isLoading } = usePropostas({
     status: filtroStatus === 'todos' ? undefined : filtroStatus,
@@ -311,6 +315,13 @@ function ListaPropostas({ onEditar }: { onEditar: (p: Proposta) => void }) {
                         <Button size="sm" variant="ghost" onClick={() => { setEditId(p._id); setNovoStatus(p.status) }}>
                           Status
                         </Button>
+                        <button
+                          title="Excluir proposta"
+                          onClick={() => setExcluirId(p._id)}
+                          className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition"
+                        >
+                          <Trash2 size={15} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -338,6 +349,15 @@ function ListaPropostas({ onEditar }: { onEditar: (p: Proposta) => void }) {
             </tbody>
           </table>
         </div>
+      )}
+
+      {excluirId && (
+        <ConfirmDialog
+          mensagem="Tem certeza que deseja excluir esta proposta? Esta ação não pode ser desfeita."
+          onConfirm={() => excluir.mutate(excluirId, { onSuccess: () => setExcluirId(null) })}
+          onCancel={() => setExcluirId(null)}
+          loading={excluir.isPending}
+        />
       )}
     </div>
   )

@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Mail, Send, Pencil } from 'lucide-react'
-import { useOrdens, useCriarOrdem, useAtualizarOrdem, useEnviarEmailOS } from '../hooks/useOrdens'
+import { Mail, Send, Pencil, Trash2 } from 'lucide-react'
+import { useOrdens, useCriarOrdem, useAtualizarOrdem, useEnviarEmailOS, useExcluirOrdem } from '../hooks/useOrdens'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
 import { useClientes } from '../hooks/useClientes'
 import { STATUS_OS, STATUS_OS_COR, TIPOS_OS } from '../utils/constants'
 import { dataBr } from '../utils/formatters'
@@ -171,6 +172,8 @@ function ListaOS({ onEditar }: { onEditar: (os: OrdemServico) => void }) {
   const [obs, setObs] = useState('')
   const [emailConclusao, setEmailConclusao] = useState('')
   const atualizar = useAtualizarOrdem()
+  const excluir = useExcluirOrdem()
+  const [excluirId, setExcluirId] = useState<string | null>(null)
 
   const [emailModal, setEmailModal] = useState<{ open: boolean; os: OrdemServico | null }>({ open: false, os: null })
   const [emailDestino, setEmailDestino] = useState('')
@@ -280,6 +283,13 @@ function ListaOS({ onEditar }: { onEditar: (os: OrdemServico) => void }) {
                         >
                           <Mail size={16} />
                         </button>
+                        <button
+                          title="Excluir OS"
+                          onClick={() => setExcluirId(os._id)}
+                          className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition"
+                        >
+                          <Trash2 size={15} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -347,6 +357,15 @@ function ListaOS({ onEditar }: { onEditar: (os: OrdemServico) => void }) {
           </div>
         )}
       </Modal>
+
+      {excluirId && (
+        <ConfirmDialog
+          mensagem="Tem certeza que deseja excluir esta OS? Esta ação não pode ser desfeita."
+          onConfirm={() => excluir.mutate(excluirId, { onSuccess: () => setExcluirId(null) })}
+          onCancel={() => setExcluirId(null)}
+          loading={excluir.isPending}
+        />
+      )}
     </div>
   )
 }

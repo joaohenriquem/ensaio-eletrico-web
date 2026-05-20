@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { Plus, Trash2, Download, CheckCircle, ChevronDown, ChevronUp, Pencil } from 'lucide-react'
 import ImageUpload from '../components/ui/ImageUpload'
 import SignaturePad from '../components/ui/SignaturePad'
-import { useRelatorios, useCriarRelatorio, useAtualizarRelatorio } from '../hooks/useRelatorios'
+import { useRelatorios, useCriarRelatorio, useAtualizarRelatorio, useExcluirRelatorio } from '../hooks/useRelatorios'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
 import { useClientes } from '../hooks/useClientes'
 import {
   NORMAS_PADRAO, TIPOS_PAINEL, ITENS_INSPECAO_VISUAL, ITENS_LIMPEZA,
@@ -371,6 +372,8 @@ function NovoRelatorioForm({ onSuccess, editData }: { onSuccess: () => void; edi
 function ListaRelatorios({ onEditar }: { onEditar: (rel: Relatorio) => void }) {
   const { data: relatorios = [], isLoading } = useRelatorios()
   const atualizar = useAtualizarRelatorio()
+  const excluir = useExcluirRelatorio()
+  const [excluirId, setExcluirId] = useState<string | null>(null)
 
   async function finalizar(id: string) {
     await atualizar.mutateAsync({ id, data: { status: 'finalizado' } })
@@ -420,6 +423,13 @@ function ListaRelatorios({ onEditar }: { onEditar: (rel: Relatorio) => void }) {
                           <CheckCircle size={13} /> Finalizar
                         </Button>
                       )}
+                      <button
+                        title="Excluir relatório"
+                        onClick={() => setExcluirId(rel._id)}
+                        className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition"
+                      >
+                        <Trash2 size={15} />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -430,6 +440,15 @@ function ListaRelatorios({ onEditar }: { onEditar: (rel: Relatorio) => void }) {
             </tbody>
           </table>
         </div>
+      )}
+
+      {excluirId && (
+        <ConfirmDialog
+          mensagem="Tem certeza que deseja excluir este relatório? Esta ação não pode ser desfeita."
+          onConfirm={() => excluir.mutate(excluirId, { onSuccess: () => setExcluirId(null) })}
+          onCancel={() => setExcluirId(null)}
+          loading={excluir.isPending}
+        />
       )}
     </div>
   )

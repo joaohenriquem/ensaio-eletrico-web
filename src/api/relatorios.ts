@@ -29,3 +29,7 @@ export async function baixarPdfRelatorio(id: string, numero: string): Promise<vo
   a.click()
   URL.revokeObjectURL(url)
 }
+
+export async function excluirRelatorio(id: string): Promise<void> {
+  await api.delete(`/relatorios/${id}`)
+}
