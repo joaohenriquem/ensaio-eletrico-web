@@ -21,8 +21,8 @@ const navBase = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, exact: false },
   { to: '/clientes', label: 'Clientes', icon: Users, exact: false },
   { to: '/ordens', label: 'Ordens de Serviço', icon: ClipboardList, exact: false },
-  { to: '/relatorios', label: 'Relatórios de Manutenção', icon: Wrench, exact: false },
   { to: '/propostas', label: 'Propostas Comerciais', icon: FileText, exact: false },
+  { to: '/relatorios', label: 'Relatórios de Manutenção', icon: Wrench, exact: false },
 ]
 
 const navAdmin = [
