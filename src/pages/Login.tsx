@@ -6,7 +6,7 @@ import { useAuth } from '../hooks/useAuth'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import logo from '../static/logo.jpeg'
-import bgVideo from '../static/animacao.mp4'
+import bgVideo from '../static/video2.mp4'
 
 export default function Login() {
   const { login: saveAuth } = useAuth()
