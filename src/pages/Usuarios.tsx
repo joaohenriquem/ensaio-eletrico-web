@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { CheckCircle, XCircle, Clock, Users, ShieldCheck, MapPin, History } from 'lucide-react'
-import { listarUsuarios, aprovarUsuario, rejeitarUsuario, listarLoginLogs } from '../api/auth'
+import { CheckCircle, XCircle, Clock, Users, ShieldCheck, MapPin, History, Pencil } from 'lucide-react'
+import { listarUsuarios, aprovarUsuario, rejeitarUsuario, listarLoginLogs, editarUsuario } from '../api/auth'
 import type { UsuarioAdmin } from '../types'
 import Button from '../components/ui/Button'
+import Input from '../components/ui/Input'
+import Select from '../components/ui/Select'
 import { useAuth } from '../hooks/useAuth'
 import { Navigate } from 'react-router'
 
@@ -52,10 +54,68 @@ function ModalRejeitar({ usuario, onConfirm, onCancel }: {
   )
 }
 
+const PERFIS = [
+  { value: 'Técnico', label: 'Técnico' },
+  { value: 'Admin', label: 'Administrador' },
+]
+
+function ModalEditar({ usuario, onClose }: { usuario: UsuarioAdmin; onClose: () => void }) {
+  const qc = useQueryClient()
+  const [form, setForm] = useState({
+    nome: usuario.nome,
+    email: usuario.email ?? '',
+    username: usuario.username,
+    perfil: usuario.perfil,
+    novaSenha: '',
+  })
+  const [erro, setErro] = useState('')
+
+  const mut = useMutation({
+    mutationFn: () => editarUsuario(usuario.id, {
+      nome: form.nome,
+      email: form.email,
+      username: form.username,
+      perfil: form.perfil,
+      novaSenha: form.novaSenha || undefined,
+    }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['usuarios'] })
+      onClose()
+    },
+    onError: (err: unknown) => {
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+      setErro(msg ?? 'Erro ao salvar.')
+    },
+  })
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+        <h2 className="mb-4 text-lg font-semibold text-gray-900">Editar usuário</h2>
+        <div className="flex flex-col gap-3">
+          <Input label="Nome" value={form.nome} onChange={(e) => setForm(f => ({ ...f, nome: e.target.value }))} />
+          <Input label="E-mail" type="email" value={form.email} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} />
+          <Input label="Usuário" value={form.username} onChange={(e) => setForm(f => ({ ...f, username: e.target.value }))} />
+          <Select label="Perfil" options={PERFIS} value={form.perfil} onChange={(e) => setForm(f => ({ ...f, perfil: e.target.value }))} />
+          <Input label="Nova senha (deixe em branco para manter)" type="password" value={form.novaSenha} onChange={(e) => setForm(f => ({ ...f, novaSenha: e.target.value }))} placeholder="••••••••" />
+        </div>
+        {erro && <p className="mt-3 text-sm text-red-500">{erro}</p>}
+        <div className="mt-5 flex justify-end gap-2">
+          <Button variant="secondary" onClick={onClose} disabled={mut.isPending}>Cancelar</Button>
+          <Button onClick={() => mut.mutate()} disabled={mut.isPending}>
+            {mut.isPending ? 'Salvando...' : 'Salvar'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function Usuarios() {
   const { user } = useAuth()
   const qc = useQueryClient()
   const [rejeitando, setRejeitando] = useState<UsuarioAdmin | null>(null)
+  const [editando, setEditando] = useState<UsuarioAdmin | null>(null)
   const [filtro, setFiltro] = useState<'todos' | 'pendente' | 'aprovado' | 'rejeitado'>('todos')
 
   if (user?.perfil !== 'Administrador' && user?.perfil !== 'Admin') {
@@ -191,9 +251,21 @@ export default function Usuarios() {
                   Aprovar
                 </Button>
               )}
+
+              <button
+                title="Editar usuário"
+                onClick={() => setEditando(u)}
+                className="rounded-lg p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition"
+              >
+                <Pencil size={15} />
+              </button>
             </div>
           ))}
         </div>
+      )}
+
+      {editando && (
+        <ModalEditar usuario={editando} onClose={() => setEditando(null)} />
       )}
 
       {rejeitando && (

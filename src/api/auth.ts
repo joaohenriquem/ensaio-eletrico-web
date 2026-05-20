@@ -29,6 +29,18 @@ export async function listarUsuarios(): Promise<UsuarioAdmin[]> {
   return data
 }
 
+export interface DadosEdicaoUsuario {
+  nome?: string
+  email?: string
+  username?: string
+  perfil?: string
+  novaSenha?: string
+}
+
+export async function editarUsuario(id: string, dados: DadosEdicaoUsuario): Promise<void> {
+  await api.put(`/auth/usuarios/${id}`, dados)
+}
+
 export async function aprovarUsuario(id: string): Promise<void> {
   await api.put(`/auth/usuarios/${id}/aprovar`)
 }
