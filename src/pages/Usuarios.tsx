@@ -242,7 +242,7 @@ export default function Usuarios() {
       </div>
 
       {/* Filtros */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {(['todos', 'pendente', 'aprovado', 'rejeitado'] as const).map((f) => (
           <button
             key={f}
@@ -268,80 +268,60 @@ export default function Usuarios() {
       ) : (
         <div className="space-y-3">
           {lista.map((u) => (
-            <div
-              key={u.id}
-              className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
-            >
-              {u.foto_url ? (
-                <img src={u.foto_url} alt={u.nome} className="h-10 w-10 shrink-0 rounded-full object-cover ring-2 ring-gray-200" />
-              ) : (
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1e3050] text-sm font-bold text-[#f0a500]">
-                  {u.nome.charAt(0).toUpperCase()}
+            <div key={u.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+              {/* Linha principal */}
+              <div className="flex items-center gap-3">
+                {u.foto_url ? (
+                  <img src={u.foto_url} alt={u.nome} className="h-10 w-10 shrink-0 rounded-full object-cover ring-2 ring-gray-200" />
+                ) : (
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1e3050] text-sm font-bold text-[#f0a500]">
+                    {u.nome.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-semibold text-gray-900 truncate">{u.nome}</p>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_STYLE[u.status]}`}>
+                      {STATUS_LABEL[u.status]}
+                    </span>
+                  </div>
+                  <p className="truncate text-sm text-gray-500">{u.email} · @{u.username}</p>
+                  <p className="text-xs text-gray-400">{u.perfil}</p>
                 </div>
-              )}
-
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold text-gray-900">{u.nome}</p>
-                <p className="truncate text-sm text-gray-500">{u.email} · @{u.username}</p>
-                <p className="text-xs text-gray-400">{u.perfil}</p>
+                <button
+                  title="Editar usuário"
+                  onClick={() => setEditando(u)}
+                  className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition"
+                >
+                  <Pencil size={15} />
+                </button>
               </div>
 
-              <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLE[u.status]}`}>
-                {STATUS_LABEL[u.status]}
-              </span>
-
+              {/* Ações — só aparecem quando necessário */}
               {u.status === 'pendente' && (
-                <div className="flex shrink-0 gap-2">
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    onClick={() => mutAprovar.mutate(u.id)}
-                    disabled={mutAprovar.isPending}
-                  >
-                    <CheckCircle size={14} />
-                    Aprovar
+                <div className="mt-3 flex gap-2 border-t border-gray-100 pt-3">
+                  <Button size="sm" variant="primary" className="flex-1" onClick={() => mutAprovar.mutate(u.id)} disabled={mutAprovar.isPending}>
+                    <CheckCircle size={14} /> Aprovar
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="danger"
-                    onClick={() => setRejeitando(u)}
-                  >
-                    <XCircle size={14} />
-                    Rejeitar
+                  <Button size="sm" variant="danger" className="flex-1" onClick={() => setRejeitando(u)}>
+                    <XCircle size={14} /> Rejeitar
                   </Button>
                 </div>
               )}
-
               {u.status === 'aprovado' && (
-                <Button
-                  size="sm"
-                  variant="danger"
-                  onClick={() => setRejeitando(u)}
-                >
-                  <XCircle size={14} />
-                  Revogar
-                </Button>
+                <div className="mt-3 border-t border-gray-100 pt-3">
+                  <Button size="sm" variant="danger" className="w-full" onClick={() => setRejeitando(u)}>
+                    <XCircle size={14} /> Revogar acesso
+                  </Button>
+                </div>
               )}
-
               {u.status === 'rejeitado' && (
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => mutAprovar.mutate(u.id)}
-                  disabled={mutAprovar.isPending}
-                >
-                  <CheckCircle size={14} />
-                  Aprovar
-                </Button>
+                <div className="mt-3 border-t border-gray-100 pt-3">
+                  <Button size="sm" variant="secondary" className="w-full" onClick={() => mutAprovar.mutate(u.id)} disabled={mutAprovar.isPending}>
+                    <CheckCircle size={14} /> Aprovar
+                  </Button>
+                </div>
               )}
-
-              <button
-                title="Editar usuário"
-                onClick={() => setEditando(u)}
-                className="rounded-lg p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition"
-              >
-                <Pencil size={15} />
-              </button>
             </div>
           ))}
         </div>
