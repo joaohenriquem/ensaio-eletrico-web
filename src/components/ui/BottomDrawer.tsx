@@ -26,7 +26,7 @@ export default function BottomDrawer({ open, onClose, title, children }: Props) 
       />
       <div
         className={cn(
-          'fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-white shadow-2xl transition-transform duration-300',
+          'fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-white shadow-2xl transition-transform duration-300 lg:!max-h-[95vh]',
           open ? 'translate-y-0' : 'translate-y-full'
         )}
         style={{ maxHeight: 'calc(88dvh - env(safe-area-inset-top, 0px))' }}
