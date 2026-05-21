@@ -29,7 +29,7 @@ export default function BottomDrawer({ open, onClose, title, children }: Props) 
           'fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-white shadow-2xl transition-transform duration-300',
           open ? 'translate-y-0' : 'translate-y-full'
         )}
-        style={{ maxHeight: 'calc(88vh - env(safe-area-inset-top, 0px))' }}
+        style={{ maxHeight: 'calc(88dvh - env(safe-area-inset-top, 0px))' }}
       >
         <div className="mx-auto mt-3 h-1 w-10 shrink-0 rounded-full bg-gray-200" />
         <div className="flex shrink-0 items-center justify-between px-5 py-3">
@@ -38,7 +38,7 @@ export default function BottomDrawer({ open, onClose, title, children }: Props) 
             <X size={20} />
           </button>
         </div>
-        <div className="overflow-y-auto px-5 pb-10">
+        <div className="overflow-y-auto px-5" style={{ paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom, 0px))' }}>
           {children}
         </div>
       </div>
