@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle, XCircle, Clock, Users, ShieldCheck, MapPin, History, Pencil } from 'lucide-react'
-import { listarUsuarios, aprovarUsuario, rejeitarUsuario, listarLoginLogs, editarUsuario } from '../api/auth'
+import { listarUsuarios, aprovarUsuario, rejeitarUsuario, listarLoginLogs, editarUsuario, criarUsuarioAdmin } from '../api/auth'
 import { uploadImagem } from '../api/uploads'
 import type { UsuarioAdmin } from '../types'
 import Button from '../components/ui/Button'
@@ -59,6 +59,49 @@ const PERFIS = [
   { value: 'Técnico', label: 'Técnico' },
   { value: 'Admin', label: 'Administrador' },
 ]
+
+function ModalCriar({ onClose }: { onClose: () => void }) {
+  const qc = useQueryClient()
+  const [form, setForm] = useState({
+    nome: '', email: '', username: '', senha: '', perfil: 'Técnico', trocar_senha: true,
+  })
+  const [erro, setErro] = useState('')
+
+  const mut = useMutation({
+    mutationFn: () => criarUsuarioAdmin(form),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['usuarios'] }); onClose() },
+    onError: (err: unknown) => {
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+      setErro(msg ?? 'Erro ao criar usuário.')
+    },
+  })
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+        <h2 className="mb-4 text-lg font-semibold text-gray-900">Novo Usuário</h2>
+        <div className="flex flex-col gap-3">
+          <Input label="Nome *" value={form.nome} onChange={(e) => setForm(f => ({ ...f, nome: e.target.value }))} autoFocus />
+          <Input label="E-mail *" type="email" value={form.email} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} />
+          <Input label="Usuário *" value={form.username} onChange={(e) => setForm(f => ({ ...f, username: e.target.value }))} />
+          <Select label="Perfil" options={PERFIS} value={form.perfil} onChange={(e) => setForm(f => ({ ...f, perfil: e.target.value }))} />
+          <Input label="Senha inicial *" type="password" value={form.senha} onChange={(e) => setForm(f => ({ ...f, senha: e.target.value }))} placeholder="Mínimo 6 caracteres" />
+          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+            <input type="checkbox" checked={form.trocar_senha} onChange={(e) => setForm(f => ({ ...f, trocar_senha: e.target.checked }))} className="accent-[#f0a500]" />
+            Forçar troca de senha no primeiro login
+          </label>
+        </div>
+        {erro && <p className="mt-3 text-sm text-red-500">{erro}</p>}
+        <div className="mt-5 flex justify-end gap-2">
+          <Button variant="secondary" onClick={onClose} disabled={mut.isPending}>Cancelar</Button>
+          <Button onClick={() => mut.mutate()} disabled={mut.isPending}>
+            {mut.isPending ? 'Criando...' : 'Criar usuário'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function ModalEditar({ usuario, onClose }: { usuario: UsuarioAdmin; onClose: () => void }) {
   const qc = useQueryClient()
@@ -163,6 +206,7 @@ export default function Usuarios() {
   const qc = useQueryClient()
   const [rejeitando, setRejeitando] = useState<UsuarioAdmin | null>(null)
   const [editando, setEditando] = useState<UsuarioAdmin | null>(null)
+  const [criando, setCriando] = useState(false)
   const [filtro, setFiltro] = useState<'todos' | 'pendente' | 'aprovado' | 'rejeitado'>('todos')
 
   if (user?.perfil !== 'Administrador' && user?.perfil !== 'Admin') {
@@ -201,12 +245,17 @@ export default function Usuarios() {
           <h1 className="text-xl font-bold text-gray-900">Usuários</h1>
           <p className="text-sm text-gray-500">Gerencie o acesso ao sistema</p>
         </div>
-        {pendentes > 0 && (
-          <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-yellow-100 px-3 py-1 text-sm font-semibold text-yellow-800">
-            <Clock size={14} />
-            {pendentes} pendente{pendentes > 1 ? 's' : ''}
-          </span>
-        )}
+        <div className="ml-auto flex items-center gap-2">
+          {pendentes > 0 && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-100 px-3 py-1 text-sm font-semibold text-yellow-800">
+              <Clock size={14} />
+              {pendentes} pendente{pendentes > 1 ? 's' : ''}
+            </span>
+          )}
+          <Button size="sm" onClick={() => setCriando(true)}>
+            + Novo Usuário
+          </Button>
+        </div>
       </div>
 
       {/* Filtros */}
@@ -314,6 +363,8 @@ export default function Usuarios() {
           ))}
         </div>
       )}
+
+      {criando && <ModalCriar onClose={() => setCriando(false)} />}
 
       {editando && (
         <ModalEditar usuario={editando} onClose={() => setEditando(null)} />

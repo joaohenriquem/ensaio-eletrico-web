@@ -47,6 +47,19 @@ export interface DadosEdicaoUsuario {
   foto_url?: string
 }
 
+export interface DadosCriacaoUsuarioAdmin {
+  nome: string
+  email: string
+  username: string
+  senha: string
+  perfil?: string
+  trocar_senha?: boolean
+}
+
+export async function criarUsuarioAdmin(dados: DadosCriacaoUsuarioAdmin): Promise<void> {
+  await api.post('/auth/usuarios', dados)
+}
+
 export async function editarUsuario(id: string, dados: DadosEdicaoUsuario): Promise<void> {
   await api.put(`/auth/usuarios/${id}`, dados)
 }
