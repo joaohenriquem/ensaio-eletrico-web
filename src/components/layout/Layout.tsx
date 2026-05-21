@@ -21,6 +21,16 @@ export default function Layout({ children, onFotoChange }: Props) {
     navigate('/login')
   }
 
+  const initials = user?.nome ? user.nome.charAt(0).toUpperCase() : '?'
+
+  function Avatar({ size = 9 }: { size?: number }) {
+    const cls = `h-${size} w-${size} rounded-full object-cover ring-2 ring-[#f0a500]/40`
+    const textCls = `flex h-${size} w-${size} items-center justify-center rounded-full bg-[#f0a500] font-bold text-[#1e3050]`
+    return user?.foto_url
+      ? <img src={user.foto_url} alt={user.nome} className={cls} />
+      : <div className={textCls} style={{ fontSize: size <= 8 ? '0.75rem' : '0.875rem' }}>{initials}</div>
+  }
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar
@@ -45,6 +55,7 @@ export default function Layout({ children, onFotoChange }: Props) {
             <Menu size={22} />
           </button>
           <span className="flex-1 text-sm font-semibold text-[#1e3050]">Ensaio Elétrico</span>
+          <Avatar size={8} />
           <button
             onClick={handleLogoutMobile}
             className="rounded-lg p-1.5 text-gray-600 hover:bg-gray-100"
@@ -52,6 +63,17 @@ export default function Layout({ children, onFotoChange }: Props) {
           >
             <LogOut size={20} />
           </button>
+        </header>
+
+        {/* Top bar desktop */}
+        <header className="sticky top-0 z-10 hidden items-center justify-end border-b border-gray-200 bg-white px-6 py-3 lg:flex">
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <p className="text-sm font-medium text-gray-800">{user?.nome}</p>
+              <p className="text-xs text-gray-500">{user?.perfil}</p>
+            </div>
+            <Avatar size={9} />
+          </div>
         </header>
 
         <main className="p-4 lg:p-6">{children}</main>
