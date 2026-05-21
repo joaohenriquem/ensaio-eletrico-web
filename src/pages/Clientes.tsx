@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, ChevronDown, Edit2, UserX, Trash2, Plus, Phone, Mail, MapPin, Building2 } from 'lucide-react'
+import { Search, ChevronDown, Edit2, UserX, Trash2, Plus, Mail, MapPin, Building2 } from 'lucide-react'
 import { useClientes, useCriarCliente, useAtualizarCliente, useExcluirCliente } from '../hooks/useClientes'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import BottomDrawer from '../components/ui/BottomDrawer'
