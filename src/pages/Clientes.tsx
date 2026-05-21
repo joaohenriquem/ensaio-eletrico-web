@@ -134,10 +134,15 @@ function ClienteCard({ cliente, onEdit, onExcluir }: {
               </p>
             )}
             {cliente.telefone && (
-              <p className="flex items-center gap-2">
-                <Phone size={13} className="shrink-0 text-gray-400" />
+              <a
+                href={`https://wa.me/55${cliente.telefone.replace(/\D/g, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-green-600 active:opacity-70"
+              >
+                <Phone size={13} className="shrink-0" />
                 {cliente.telefone}
-              </p>
+              </a>
             )}
             {cliente.email && (
               <p className="flex items-center gap-2">
