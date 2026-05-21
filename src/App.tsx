@@ -8,6 +8,7 @@ import Login from './pages/Login'
 import Cadastro from './pages/Cadastro'
 import EsqueciSenha from './pages/EsqueciSenha'
 import RedefinirSenha from './pages/RedefinirSenha'
+import TrocarSenha from './pages/TrocarSenha'
 import Usuarios from './pages/Usuarios'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
@@ -67,6 +68,7 @@ export default function App() {
             <Route path="/cadastro" element={<Cadastro />} />
             <Route path="/esqueci-senha" element={<EsqueciSenha />} />
             <Route path="/redefinir-senha" element={<RedefinirSenha />} />
+            <Route path="/trocar-senha" element={<TrocarSenha />} />
             <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
             <Route path="/usuarios" element={<PrivateRoute><Usuarios /></PrivateRoute>} />
             <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />

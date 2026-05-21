@@ -58,9 +58,9 @@ export default function Login() {
     setLoading(true)
     try {
       const geo = geoRef.current
-      const { token, user } = await verifyOtp(userId, otp.trim(), geo?.latitude, geo?.longitude)
-      saveAuth(token, user)
-      navigate('/')
+      const res = await verifyOtp(userId, otp.trim(), geo?.latitude, geo?.longitude)
+      saveAuth(res.token, res.user)
+      navigate(res.trocarSenha ? '/trocar-senha' : '/')
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
       setError(msg ?? 'Código inválido ou expirado.')

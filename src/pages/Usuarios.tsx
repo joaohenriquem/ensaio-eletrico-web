@@ -67,6 +67,7 @@ function ModalEditar({ usuario, onClose }: { usuario: UsuarioAdmin; onClose: () 
     username: usuario.username,
     perfil: usuario.perfil,
     novaSenha: '',
+    trocarSenha: false,
   })
   const [erro, setErro] = useState('')
 
@@ -77,6 +78,7 @@ function ModalEditar({ usuario, onClose }: { usuario: UsuarioAdmin; onClose: () 
       username: form.username,
       perfil: form.perfil,
       novaSenha: form.novaSenha || undefined,
+      trocar_senha: form.novaSenha ? true : form.trocarSenha,
     }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['usuarios'] })
@@ -98,6 +100,16 @@ function ModalEditar({ usuario, onClose }: { usuario: UsuarioAdmin; onClose: () 
           <Input label="Usuário" value={form.username} onChange={(e) => setForm(f => ({ ...f, username: e.target.value }))} />
           <Select label="Perfil" options={PERFIS} value={form.perfil} onChange={(e) => setForm(f => ({ ...f, perfil: e.target.value }))} />
           <Input label="Nova senha (deixe em branco para manter)" type="password" value={form.novaSenha} onChange={(e) => setForm(f => ({ ...f, novaSenha: e.target.value }))} placeholder="••••••••" />
+          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={form.trocarSenha || !!form.novaSenha}
+              onChange={(e) => setForm(f => ({ ...f, trocarSenha: e.target.checked }))}
+              disabled={!!form.novaSenha}
+              className="accent-[#f0a500]"
+            />
+            Forçar troca de senha no próximo login
+          </label>
         </div>
         {erro && <p className="mt-3 text-sm text-red-500">{erro}</p>}
         <div className="mt-5 flex justify-end gap-2">

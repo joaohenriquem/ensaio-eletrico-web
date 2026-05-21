@@ -6,9 +6,13 @@ export async function login(username: string, password: string): Promise<MfaResp
   return data
 }
 
-export async function verifyOtp(userId: string, otp: string, latitude?: number, longitude?: number): Promise<LoginResponse> {
-  const { data } = await api.post<LoginResponse>('/auth/verify-otp', { userId, otp, latitude, longitude })
+export async function verifyOtp(userId: string, otp: string, latitude?: number, longitude?: number): Promise<LoginResponse & { trocarSenha?: boolean }> {
+  const { data } = await api.post<LoginResponse & { trocarSenha?: boolean }>('/auth/verify-otp', { userId, otp, latitude, longitude })
   return data
+}
+
+export async function changePassword(novaSenha: string): Promise<void> {
+  await api.post('/auth/change-password', { novaSenha })
 }
 
 export interface DadosCadastro {
@@ -35,6 +39,7 @@ export interface DadosEdicaoUsuario {
   username?: string
   perfil?: string
   novaSenha?: string
+  trocar_senha?: boolean
 }
 
 export async function editarUsuario(id: string, dados: DadosEdicaoUsuario): Promise<void> {
