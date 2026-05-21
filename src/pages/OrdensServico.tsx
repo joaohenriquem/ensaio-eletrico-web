@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Mail, Send, Trash2, Plus, ClipboardList, MapPin, User, ChevronDown, Download } from 'lucide-react'
+import { Mail, Send, Trash2, Plus, ClipboardList, MapPin, User, ChevronDown } from 'lucide-react'
 import { useOrdens, useCriarOrdem, useAtualizarOrdem, useEnviarEmailOS, useExcluirOrdem } from '../hooks/useOrdens'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import BottomDrawer from '../components/ui/BottomDrawer'
