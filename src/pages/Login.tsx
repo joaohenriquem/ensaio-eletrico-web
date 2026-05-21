@@ -23,16 +23,35 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const geoRef = useRef<{ latitude: number; longitude: number } | null>(null)
 
-  // Solicita geolocalização assim que a página abre — dá tempo ao usuário aceitar
+  async function getIpGeo(): Promise<{ latitude: number; longitude: number } | null> {
+    try {
+      const res = await fetch('https://ipapi.co/json/')
+      const data = await res.json()
+      if (data.latitude && data.longitude) {
+        return { latitude: Number(data.latitude), longitude: Number(data.longitude) }
+      }
+    } catch { }
+    return null
+  }
+
   useEffect(() => {
-    if (!navigator.geolocation) return
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        geoRef.current = { latitude: pos.coords.latitude, longitude: pos.coords.longitude }
-      },
-      () => { geoRef.current = null },
-      { timeout: 30000, maximumAge: 60000 }
-    )
+    async function initGeo() {
+      if (!navigator.geolocation) {
+        geoRef.current = await getIpGeo()
+        return
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          geoRef.current = { latitude: pos.coords.latitude, longitude: pos.coords.longitude }
+        },
+        async () => {
+          // usuário negou ou timeout — fallback para geolocalização por IP
+          geoRef.current = await getIpGeo()
+        },
+        { timeout: 8000, maximumAge: 60000 }
+      )
+    }
+    initGeo()
   }, [])
 
   async function handleCredentials(e: FormEvent) {
@@ -57,6 +76,7 @@ export default function Login() {
     setError('')
     setLoading(true)
     try {
+      if (!geoRef.current) geoRef.current = await getIpGeo()
       const geo = geoRef.current
       const res = await verifyOtp(userId, otp.trim(), geo?.latitude, geo?.longitude)
       saveAuth(res.token, res.user)
