@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Plus, Trash2, Download, CheckCircle, ChevronDown, ChevronUp, Pencil } from 'lucide-react'
+import { Plus, Trash2, Download, CheckCircle, ChevronDown, Pencil, Wrench, MapPin, User } from 'lucide-react'
 import ImageUpload from '../components/ui/ImageUpload'
 import SignaturePad from '../components/ui/SignaturePad'
 import { useRelatorios, useCriarRelatorio, useAtualizarRelatorio, useExcluirRelatorio } from '../hooks/useRelatorios'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
+import BottomDrawer from '../components/ui/BottomDrawer'
 import { useClientes } from '../hooks/useClientes'
 import {
   NORMAS_PADRAO, TIPOS_PAINEL, ITENS_INSPECAO_VISUAL, ITENS_LIMPEZA,
@@ -13,18 +14,13 @@ import {
 import { dataBr } from '../utils/formatters'
 import { baixarPdfRelatorio } from '../api/relatorios'
 import type { Painel, Relatorio } from '../types'
-import Tabs from '../components/ui/Tabs'
 import Card from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Select from '../components/ui/Select'
 
-function PainelForm({
-  painel,
-  index,
-  onChange,
-}: {
+function PainelForm({ painel, index, onChange }: {
   painel: Painel
   index: number
   onChange: (p: Painel) => void
@@ -43,11 +39,7 @@ function PainelForm({
     onChange({ ...painel, verificacao_eletrica: { ...painel.verificacao_eletrica, [chave]: valor } })
   }
 
-  const CheckItem = ({
-    grupo,
-    chave,
-    rotulo,
-  }: {
+  const CheckItem = ({ grupo, chave, rotulo }: {
     grupo: keyof Pick<Painel, 'inspecao_visual' | 'limpeza_tecnica' | 'reaperto_mecanico'>
     chave: string
     rotulo: string
@@ -57,14 +49,8 @@ function PainelForm({
       <div className="flex items-center justify-between rounded border border-gray-100 bg-gray-50 px-2 py-1.5">
         <span className="text-xs">{rotulo}</span>
         <div className="flex gap-1">
-          <button
-            onClick={() => setChecklist(grupo, chave, 'conforme')}
-            className={`rounded px-2 py-0.5 text-xs font-medium transition ${val === 'conforme' ? 'bg-green-500 text-white' : 'bg-white text-gray-500 border'}`}
-          >✓</button>
-          <button
-            onClick={() => setChecklist(grupo, chave, 'nao_conforme')}
-            className={`rounded px-2 py-0.5 text-xs font-medium transition ${val === 'nao_conforme' ? 'bg-red-500 text-white' : 'bg-white text-gray-500 border'}`}
-          >✗</button>
+          <button onClick={() => setChecklist(grupo, chave, 'conforme')} className={`rounded px-2 py-0.5 text-xs font-medium transition ${val === 'conforme' ? 'bg-green-500 text-white' : 'bg-white text-gray-500 border'}`}>✓</button>
+          <button onClick={() => setChecklist(grupo, chave, 'nao_conforme')} className={`rounded px-2 py-0.5 text-xs font-medium transition ${val === 'nao_conforme' ? 'bg-red-500 text-white' : 'bg-white text-gray-500 border'}`}>✗</button>
         </div>
       </div>
     )
@@ -77,7 +63,7 @@ function PainelForm({
         className="flex w-full items-center justify-between px-4 py-3 hover:bg-gray-50"
       >
         <span className="font-medium text-sm">Painel {index + 1}: {painel.nome || 'Sem nome'}</span>
-        {open ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        <ChevronDown size={16} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open && (
@@ -91,58 +77,43 @@ function PainelForm({
               onChange={(e) => onChange({ ...painel, tipo: e.target.value })}
             />
           </div>
-
           <div>
             <p className="mb-2 text-xs font-semibold text-[#f0a500] uppercase tracking-wide">Inspeção Visual</p>
-            <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+            <div className="flex flex-col gap-1.5">
               {Object.entries(ITENS_INSPECAO_VISUAL).map(([k, v]) => (
                 <CheckItem key={k} grupo="inspecao_visual" chave={k} rotulo={v} />
               ))}
             </div>
-            <ImageUpload
-              fotos={painel.fotos_inspecao_visual ?? []}
-              onChange={(fotos) => onChange({ ...painel, fotos_inspecao_visual: fotos })}
-            />
+            <ImageUpload fotos={painel.fotos_inspecao_visual ?? []} onChange={(fotos) => onChange({ ...painel, fotos_inspecao_visual: fotos })} />
           </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <p className="mb-2 text-xs font-semibold text-[#f0a500] uppercase tracking-wide">Limpeza Técnica</p>
-              <div className="flex flex-col gap-1.5">
-                {Object.entries(ITENS_LIMPEZA).map(([k, v]) => (
-                  <CheckItem key={k} grupo="limpeza_tecnica" chave={k} rotulo={v} />
-                ))}
-              </div>
-              <ImageUpload
-                fotos={painel.fotos_limpeza_tecnica ?? []}
-                onChange={(fotos) => onChange({ ...painel, fotos_limpeza_tecnica: fotos })}
-              />
+          <div>
+            <p className="mb-2 text-xs font-semibold text-[#f0a500] uppercase tracking-wide">Limpeza Técnica</p>
+            <div className="flex flex-col gap-1.5">
+              {Object.entries(ITENS_LIMPEZA).map(([k, v]) => (
+                <CheckItem key={k} grupo="limpeza_tecnica" chave={k} rotulo={v} />
+              ))}
             </div>
-            <div>
-              <p className="mb-2 text-xs font-semibold text-[#f0a500] uppercase tracking-wide">Reaperto Mecânico</p>
-              <div className="flex flex-col gap-1.5">
-                {Object.entries(ITENS_REAPERTO).map(([k, v]) => (
-                  <CheckItem key={k} grupo="reaperto_mecanico" chave={k} rotulo={v} />
-                ))}
-              </div>
-              <ImageUpload
-                fotos={painel.fotos_reaperto_mecanico ?? []}
-                onChange={(fotos) => onChange({ ...painel, fotos_reaperto_mecanico: fotos })}
-              />
-            </div>
+            <ImageUpload fotos={painel.fotos_limpeza_tecnica ?? []} onChange={(fotos) => onChange({ ...painel, fotos_limpeza_tecnica: fotos })} />
           </div>
-
+          <div>
+            <p className="mb-2 text-xs font-semibold text-[#f0a500] uppercase tracking-wide">Reaperto Mecânico</p>
+            <div className="flex flex-col gap-1.5">
+              {Object.entries(ITENS_REAPERTO).map(([k, v]) => (
+                <CheckItem key={k} grupo="reaperto_mecanico" chave={k} rotulo={v} />
+              ))}
+            </div>
+            <ImageUpload fotos={painel.fotos_reaperto_mecanico ?? []} onChange={(fotos) => onChange({ ...painel, fotos_reaperto_mecanico: fotos })} />
+          </div>
           <div>
             <p className="mb-2 text-xs font-semibold text-[#f0a500] uppercase tracking-wide">Verificação Elétrica</p>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <div className="flex flex-col gap-2">
               <Input label="Medição de Tensão" value={painel.verificacao_eletrica.medicao_tensao} onChange={(e) => setVerificacao('medicao_tensao', e.target.value)} />
               <Input label="Medição de Corrente" value={painel.verificacao_eletrica.medicao_corrente} onChange={(e) => setVerificacao('medicao_corrente', e.target.value)} />
               {['equilibrio_fases', 'continuidade_condutor_pe'].map(k => {
                 const val = painel.verificacao_eletrica[k] ?? 'conforme'
-                const rotulo = ITENS_VERIFICACAO_ELETRICA[k]
                 return (
                   <div key={k} className="flex items-center justify-between rounded border border-gray-100 bg-gray-50 px-2 py-1.5">
-                    <span className="text-xs">{rotulo}</span>
+                    <span className="text-xs">{ITENS_VERIFICACAO_ELETRICA[k]}</span>
                     <div className="flex gap-1">
                       <button onClick={() => setVerificacao(k, 'conforme')} className={`rounded px-2 py-0.5 text-xs font-medium ${val === 'conforme' ? 'bg-green-500 text-white' : 'bg-white text-gray-500 border'}`}>✓</button>
                       <button onClick={() => setVerificacao(k, 'nao_conforme')} className={`rounded px-2 py-0.5 text-xs font-medium ${val === 'nao_conforme' ? 'bg-red-500 text-white' : 'bg-white text-gray-500 border'}`}>✗</button>
@@ -151,12 +122,8 @@ function PainelForm({
                 )
               })}
             </div>
-            <ImageUpload
-              fotos={painel.fotos_verificacao_eletrica ?? []}
-              onChange={(fotos) => onChange({ ...painel, fotos_verificacao_eletrica: fotos })}
-            />
+            <ImageUpload fotos={painel.fotos_verificacao_eletrica ?? []} onChange={(fotos) => onChange({ ...painel, fotos_verificacao_eletrica: fotos })} />
           </div>
-
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Não Conformidades</label>
@@ -173,7 +140,11 @@ function PainelForm({
   )
 }
 
-function NovoRelatorioForm({ onSuccess, editData }: { onSuccess: () => void; editData?: Relatorio | null }) {
+function RelatorioForm({ editData, onSuccess, onCancel }: {
+  editData?: Relatorio | null
+  onSuccess: () => void
+  onCancel: () => void
+}) {
   const criar = useCriarRelatorio()
   const atualizar = useAtualizarRelatorio()
   const isEdit = !!editData?._id
@@ -201,9 +172,7 @@ function NovoRelatorioForm({ onSuccess, editData }: { onSuccess: () => void; edi
   const [error, setError] = useState('')
   const [savedId, setSavedId] = useState<string | null>(null)
 
-  const clienteNome = clienteId
-    ? (clientes.find(c => c._id === clienteId)?.nome ?? '')
-    : clienteManual
+  const clienteNome = clienteId ? (clientes.find(c => c._id === clienteId)?.nome ?? '') : clienteManual
 
   function addPainel() {
     setPaineis(p => [...p, painelVazio(`Painel ${p.length + 1}`) as Painel])
@@ -213,10 +182,6 @@ function NovoRelatorioForm({ onSuccess, editData }: { onSuccess: () => void; edi
     if (paineis.length > 1) setPaineis(p => p.slice(0, -1))
   }
 
-  function updatePainel(i: number, p: Painel) {
-    setPaineis(prev => prev.map((x, idx) => (idx === i ? p : x)))
-  }
-
   async function salvar(status: 'rascunho' | 'finalizado') {
     if (!clienteNome || !form.local) { setError('Cliente e local são obrigatórios.'); return }
     setError('')
@@ -224,8 +189,7 @@ function NovoRelatorioForm({ onSuccess, editData }: { onSuccess: () => void; edi
       ...form,
       cliente_id: clienteId || undefined,
       cliente_nome: clienteNome,
-      normas,
-      paineis,
+      normas, paineis,
       assinatura: assinatura || undefined,
       nome_aprovador: nomeAprovador || undefined,
       assinatura_contratado: assinaturaContratado || undefined,
@@ -245,7 +209,7 @@ function NovoRelatorioForm({ onSuccess, editData }: { onSuccess: () => void; edi
   return (
     <div className="flex flex-col gap-4">
       <Card title="Dados Gerais">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-3">
           <Select
             label="Cliente"
             options={[
@@ -259,47 +223,48 @@ function NovoRelatorioForm({ onSuccess, editData }: { onSuccess: () => void; edi
           {!clienteId && <Input label="Ou digite o cliente" value={clienteManual} onChange={(e) => setClienteManual(e.target.value)} />}
           <Input label="Local *" value={form.local} onChange={(e) => setForm(f => ({ ...f, local: e.target.value }))} placeholder="Condomínio Recanto das Flores" />
           <Input label="Endereço / Cidade" value={form.endereco} onChange={(e) => setForm(f => ({ ...f, endereco: e.target.value }))} placeholder="Osasco – SP" />
-          <Input label="Data" type="date" value={form.data} onChange={(e) => setForm(f => ({ ...f, data: e.target.value }))} />
-          <Input label="Técnico Responsável" value={form.tecnico} onChange={(e) => setForm(f => ({ ...f, tecnico: e.target.value }))} />
-          <Input label="CFT" value={form.cft} onChange={(e) => setForm(f => ({ ...f, cft: e.target.value }))} />
-          <Input label="TRT" value={form.trt} onChange={(e) => setForm(f => ({ ...f, trt: e.target.value }))} />
-        </div>
-        <div className="mt-4">
-          <p className="mb-2 text-sm font-medium text-gray-700">Normas Aplicáveis</p>
-          <div className="flex flex-col gap-1.5">
-            {NORMAS_PADRAO.map(n => (
-              <label key={n} className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={normas.includes(n)}
-                  onChange={(e) => setNormas(prev => e.target.checked ? [...prev, n] : prev.filter(x => x !== n))}
-                  className="accent-[#f0a500]"
-                />
-                {n}
-              </label>
-            ))}
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Data" type="date" value={form.data} onChange={(e) => setForm(f => ({ ...f, data: e.target.value }))} />
+            <Input label="Técnico" value={form.tecnico} onChange={(e) => setForm(f => ({ ...f, tecnico: e.target.value }))} />
           </div>
-        </div>
-        <div className="mt-4">
-          <label className="mb-1 block text-sm font-medium text-gray-700">Objetivo</label>
-          <textarea rows={4} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#f0a500] focus:outline-none" value={form.objetivo} onChange={(e) => setForm(f => ({ ...f, objetivo: e.target.value }))} />
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="CFT" value={form.cft} onChange={(e) => setForm(f => ({ ...f, cft: e.target.value }))} />
+            <Input label="TRT" value={form.trt} onChange={(e) => setForm(f => ({ ...f, trt: e.target.value }))} />
+          </div>
+          <div>
+            <p className="mb-2 text-sm font-medium text-gray-700">Normas Aplicáveis</p>
+            <div className="flex flex-col gap-1.5">
+              {NORMAS_PADRAO.map(n => (
+                <label key={n} className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" checked={normas.includes(n)} onChange={(e) => setNormas(prev => e.target.checked ? [...prev, n] : prev.filter(x => x !== n))} className="accent-[#f0a500]" />
+                  {n}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Objetivo</label>
+            <textarea rows={3} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#f0a500] focus:outline-none" value={form.objetivo} onChange={(e) => setForm(f => ({ ...f, objetivo: e.target.value }))} />
+          </div>
         </div>
       </Card>
 
-      <div className="flex items-center gap-2">
-        <h3 className="font-semibold text-[#1e3050]">Painéis Elétricos ({paineis.length})</h3>
-        <Button size="sm" onClick={addPainel}><Plus size={14} /> Adicionar</Button>
-        <Button size="sm" variant="secondary" onClick={removePainel} disabled={paineis.length <= 1}>
-          <Trash2 size={14} /> Remover Último
-        </Button>
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-[#1e3050]">Painéis ({paineis.length})</h3>
+        <div className="flex gap-2">
+          <Button size="sm" onClick={addPainel}><Plus size={14} /> Adicionar</Button>
+          <Button size="sm" variant="secondary" onClick={removePainel} disabled={paineis.length <= 1}>
+            <Trash2 size={14} /> Remover
+          </Button>
+        </div>
       </div>
 
       {paineis.map((p, i) => (
-        <PainelForm key={i} painel={p} index={i} onChange={(np) => updatePainel(i, np)} />
+        <PainelForm key={i} painel={p} index={i} onChange={(np) => setPaineis(prev => prev.map((x, idx) => idx === i ? np : x))} />
       ))}
 
       <Card title="Complementos">
-        <div className="grid grid-cols-1 gap-4">
+        <div className="flex flex-col gap-3">
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Tomadas</label>
             <textarea rows={2} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#f0a500] focus:outline-none" value={form.tomadas} onChange={(e) => setForm(f => ({ ...f, tomadas: e.target.value }))} />
@@ -316,32 +281,14 @@ function NovoRelatorioForm({ onSuccess, editData }: { onSuccess: () => void; edi
       </Card>
 
       <Card title="Assinaturas">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-3">
-            <Input
-              label="Nome do Aprovador"
-              placeholder="Nome completo de quem aprova o serviço"
-              value={nomeAprovador}
-              onChange={(e) => setNomeAprovador(e.target.value)}
-            />
-            <SignaturePad
-              label="Assinatura do Aprovador"
-              value={assinatura}
-              onChange={setAssinatura}
-            />
+            <Input label="Nome do Aprovador" placeholder="Nome completo de quem aprova" value={nomeAprovador} onChange={(e) => setNomeAprovador(e.target.value)} />
+            <SignaturePad label="Assinatura do Aprovador" value={assinatura} onChange={setAssinatura} />
           </div>
           <div className="flex flex-col gap-3">
-            <Input
-              label="Nome do Técnico Responsável"
-              placeholder="Nome do técnico que executou o serviço"
-              value={nomeContratado}
-              onChange={(e) => setNomeContratado(e.target.value)}
-            />
-            <SignaturePad
-              label="Assinatura do Técnico"
-              value={assinaturaContratado}
-              onChange={setAssinaturaContratado}
-            />
+            <Input label="Nome do Técnico Responsável" placeholder="Nome do técnico que executou" value={nomeContratado} onChange={(e) => setNomeContratado(e.target.value)} />
+            <SignaturePad label="Assinatura do Técnico" value={assinaturaContratado} onChange={setAssinaturaContratado} />
           </div>
         </div>
       </Card>
@@ -358,89 +305,138 @@ function NovoRelatorioForm({ onSuccess, editData }: { onSuccess: () => void; edi
       )}
 
       <div className="flex gap-3">
-        <Button variant="secondary" onClick={() => salvar('rascunho')} disabled={criar.isPending || atualizar.isPending}>
-          💾 {isEdit ? 'Salvar Rascunho' : 'Salvar Rascunho'}
+        <Button variant="secondary" onClick={() => salvar('rascunho')} disabled={criar.isPending || atualizar.isPending} className="flex-1">
+          💾 Rascunho
         </Button>
-        <Button onClick={() => salvar('finalizado')} disabled={criar.isPending || atualizar.isPending}>
-          <CheckCircle size={16} /> {isEdit ? 'Salvar Alterações' : 'Finalizar Relatório'}
+        <Button onClick={() => salvar('finalizado')} disabled={criar.isPending || atualizar.isPending} className="flex-1">
+          <CheckCircle size={15} /> {isEdit ? 'Salvar' : 'Finalizar'}
         </Button>
       </div>
+      <Button variant="outline" onClick={onCancel} className="w-full">Cancelar</Button>
     </div>
   )
 }
 
-function ListaRelatorios({ onEditar }: { onEditar: (rel: Relatorio) => void }) {
-  const { data: relatorios = [], isLoading } = useRelatorios()
+function RelatorioCard({ relatorio, onEdit, onExcluir }: {
+  relatorio: Relatorio
+  onEdit: () => void
+  onExcluir: () => void
+}) {
+  const [open, setOpen] = useState(false)
   const atualizar = useAtualizarRelatorio()
-  const excluir = useExcluirRelatorio()
-  const [excluirId, setExcluirId] = useState<string | null>(null)
-
-  async function finalizar(id: string) {
-    await atualizar.mutateAsync({ id, data: { status: 'finalizado' } })
-  }
 
   return (
-    <div className="flex flex-col gap-4">
-      {isLoading ? <p className="text-sm text-gray-400">Carregando...</p> : (
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-          <table className="w-full text-sm">
-            <thead className="bg-[#1e3050] text-white">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold">Nº</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold">Cliente</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold">Local</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold">Data</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold">Painéis</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {relatorios.map((rel) => (
-                <tr key={rel._id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="px-4 py-3 font-mono text-xs">{rel.numero}</td>
-                  <td className="px-4 py-3">{rel.cliente_nome}</td>
-                  <td className="px-4 py-3 text-xs text-gray-600">{rel.local}</td>
-                  <td className="px-4 py-3 text-xs text-gray-500">{dataBr(rel.data)}</td>
-                  <td className="px-4 py-3 text-xs">{(rel.paineis ?? []).length}</td>
-                  <td className="px-4 py-3">
-                    <Badge label={STATUS_RELATORIO[rel.status] ?? rel.status} className={STATUS_RELATORIO_COR[rel.status]} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-1.5">
-                      <button
-                        title="Editar relatório"
-                        onClick={() => onEditar(rel)}
-                        className="rounded-lg p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition"
-                      >
-                        <Pencil size={15} />
-                      </button>
-                      <Button size="sm" variant="secondary" onClick={() => baixarPdfRelatorio(rel._id, rel.numero)}>
-                        <Download size={13} /> PDF
-                      </Button>
-                      {rel.status === 'rascunho' && (
-                        <Button size="sm" onClick={() => finalizar(rel._id)} disabled={atualizar.isPending}>
-                          <CheckCircle size={13} /> Finalizar
-                        </Button>
-                      )}
-                      <button
-                        title="Excluir relatório"
-                        onClick={() => setExcluirId(rel._id)}
-                        className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition"
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {relatorios.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-6 text-center text-sm text-gray-400">Nenhum relatório encontrado.</td></tr>
-              )}
-            </tbody>
-          </table>
+    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex w-full items-start gap-3 px-4 py-3.5 text-left active:bg-gray-50"
+      >
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1e3050]/10 mt-0.5">
+          <Wrench size={16} className="text-[#1e3050]" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-mono text-xs text-gray-400">{relatorio.numero}</span>
+            <Badge label={STATUS_RELATORIO[relatorio.status] ?? relatorio.status} className={`${STATUS_RELATORIO_COR[relatorio.status]} text-xs`} />
+          </div>
+          <p className="mt-0.5 truncate font-semibold text-[#1e3050] text-sm">{relatorio.cliente_nome}</p>
+          <p className="text-xs text-gray-400">{relatorio.local} · {dataBr(relatorio.data)}</p>
+        </div>
+        <ChevronDown size={16} className={`mt-1 shrink-0 text-gray-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      {open && (
+        <div className="border-t border-gray-100 bg-gray-50/60 px-4 pb-4 pt-3">
+          <div className="flex flex-col gap-1.5 text-xs text-gray-500">
+            {relatorio.endereco && (
+              <p className="flex items-center gap-1.5">
+                <MapPin size={11} className="shrink-0 text-gray-400" /> {relatorio.endereco}
+              </p>
+            )}
+            {relatorio.tecnico && (
+              <p className="flex items-center gap-1.5">
+                <User size={11} className="shrink-0 text-gray-400" /> {relatorio.tecnico}
+              </p>
+            )}
+            <p className="flex items-center gap-1.5">
+              <Wrench size={11} className="shrink-0 text-gray-400" /> {(relatorio.paineis ?? []).length} painel{(relatorio.paineis ?? []).length !== 1 ? 'is' : ''}
+            </p>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button onClick={onEdit} className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm ring-1 ring-gray-200 active:bg-gray-50">
+              <Pencil size={12} /> Editar
+            </button>
+            <button onClick={() => baixarPdfRelatorio(relatorio._id, relatorio.numero)} className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm ring-1 ring-gray-200 active:bg-gray-50">
+              <Download size={12} /> PDF
+            </button>
+            {relatorio.status === 'rascunho' && (
+              <button
+                onClick={() => atualizar.mutateAsync({ id: relatorio._id, data: { status: 'finalizado' } })}
+                className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-green-700 shadow-sm ring-1 ring-green-200 active:bg-green-50"
+              >
+                <CheckCircle size={12} /> Finalizar
+              </button>
+            )}
+            <button onClick={onExcluir} className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-red-600 shadow-sm ring-1 ring-red-200 active:bg-red-50">
+              <Trash2 size={12} /> Excluir
+            </button>
+          </div>
         </div>
       )}
+    </div>
+  )
+}
+
+export default function Relatorios() {
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [editRel, setEditRel] = useState<Relatorio | null>(null)
+  const [excluirId, setExcluirId] = useState<string | null>(null)
+
+  const { data: relatorios = [], isLoading } = useRelatorios()
+  const excluir = useExcluirRelatorio()
+
+  function abrirNovo() { setEditRel(null); setDrawerOpen(true) }
+  function abrirEditar(rel: Relatorio) { setEditRel(rel); setDrawerOpen(true) }
+
+  return (
+    <div className="flex flex-col gap-4 pb-24">
+      <div>
+        <h1 className="text-xl font-bold text-[#1e3050]">Relatórios de Manutenção</h1>
+        {!isLoading && <p className="text-xs text-gray-400">{relatorios.length} relatório{relatorios.length !== 1 ? 's' : ''}</p>}
+      </div>
+
+      {isLoading ? (
+        <p className="py-12 text-center text-sm text-gray-400">Carregando...</p>
+      ) : relatorios.length === 0 ? (
+        <div className="flex flex-col items-center gap-2 py-12 text-gray-400">
+          <Wrench size={32} className="opacity-30" />
+          <p className="text-sm">Nenhum relatório encontrado.</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {relatorios.map(rel => (
+            <RelatorioCard
+              key={rel._id}
+              relatorio={rel}
+              onEdit={() => abrirEditar(rel)}
+              onExcluir={() => setExcluirId(rel._id)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* FAB */}
+      <button
+        onClick={abrirNovo}
+        className="fixed bottom-6 right-6 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[#f0a500] text-[#1e3050] shadow-lg transition-transform active:scale-95 hover:bg-[#d4920a]"
+        title="Novo Relatório"
+      >
+        <Plus size={26} strokeWidth={2.5} />
+      </button>
+
+      <BottomDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title={editRel ? 'Editar Relatório' : 'Novo Relatório'}>
+        <RelatorioForm editData={editRel} onSuccess={() => setDrawerOpen(false)} onCancel={() => setDrawerOpen(false)} />
+      </BottomDrawer>
 
       {excluirId && (
         <ConfirmDialog
@@ -450,35 +446,6 @@ function ListaRelatorios({ onEditar }: { onEditar: (rel: Relatorio) => void }) {
           loading={excluir.isPending}
         />
       )}
-    </div>
-  )
-}
-
-export default function Relatorios() {
-  const [tab, setTab] = useState(0)
-  const [editRel, setEditRel] = useState<Relatorio | null>(null)
-
-  function handleEditar(rel: Relatorio) {
-    setEditRel(rel)
-    setTab(1)
-  }
-
-  function handleSuccess() {
-    setEditRel(null)
-    setTab(0)
-  }
-
-  return (
-    <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold text-[#1e3050]">Relatórios de Manutenção</h1>
-      <Tabs
-        tabs={[
-          { label: '📋 Lista', content: <ListaRelatorios onEditar={handleEditar} /> },
-          { label: editRel ? '✏️ Editar Relatório' : '➕ Novo Relatório', content: <NovoRelatorioForm editData={editRel} onSuccess={handleSuccess} /> },
-        ]}
-        defaultIndex={tab}
-        key={`${tab}-${editRel?._id ?? 'new'}`}
-      />
     </div>
   )
 }

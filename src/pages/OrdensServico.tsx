@@ -1,20 +1,23 @@
 import { useState } from 'react'
-import { Mail, Send, Pencil, Trash2 } from 'lucide-react'
+import { Mail, Send, Trash2, Plus, ClipboardList, MapPin, User, ChevronDown, Download } from 'lucide-react'
 import { useOrdens, useCriarOrdem, useAtualizarOrdem, useEnviarEmailOS, useExcluirOrdem } from '../hooks/useOrdens'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
+import BottomDrawer from '../components/ui/BottomDrawer'
 import { useClientes } from '../hooks/useClientes'
 import { STATUS_OS, STATUS_OS_COR, TIPOS_OS } from '../utils/constants'
 import { dataBr } from '../utils/formatters'
 import type { OrdemServico } from '../types'
-import Tabs from '../components/ui/Tabs'
-import Card from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Select from '../components/ui/Select'
 import Modal from '../components/ui/Modal'
 
-function NovaOSForm({ onSuccess, editData }: { onSuccess: () => void; editData?: OrdemServico | null }) {
+function OSForm({ editData, onSuccess, onCancel }: {
+  editData?: OrdemServico | null
+  onSuccess: () => void
+  onCancel: () => void
+}) {
   const criar = useCriarOrdem()
   const atualizar = useAtualizarOrdem()
   const enviarEmail = useEnviarEmailOS()
@@ -36,36 +39,35 @@ function NovaOSForm({ onSuccess, editData }: { onSuccess: () => void; editData?:
     observacoes: editData?.observacoes ?? '',
   })
   const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
 
   const clienteNome = clienteId
     ? (clientes.find(c => c._id === clienteId)?.nome ?? '')
     : clienteManual
 
   async function handleSubmit() {
-    if (!clienteNome || !form.descricao) {
-      setError('Cliente e descrição são obrigatórios.')
-      return
-    }
-    if (form.tipo === 'Outro' && !tipoOutro.trim()) {
-      setError('Informe o tipo de serviço.')
-      return
-    }
+    if (!clienteNome || !form.descricao) { setError('Cliente e descrição são obrigatórios.'); return }
+    if (form.tipo === 'Outro' && !tipoOutro.trim()) { setError('Informe o tipo de serviço.'); return }
+    setSaving(true)
     setError('')
-    const payload = {
-      ...form,
-      tipo: form.tipo === 'Outro' ? `Outro: ${tipoOutro.trim()}` : form.tipo,
-      cliente_id: clienteId || undefined,
-      cliente_nome: clienteNome,
-    }
-    if (isEdit) {
-      await atualizar.mutateAsync({ id: editData!._id, data: payload })
-      onSuccess()
-    } else {
-      const { id } = await criar.mutateAsync(payload)
-      if (emailAprovacao.trim()) {
-        await enviarEmail.mutateAsync({ id, destinatario: emailAprovacao.trim(), tipo: 'aprovacao' })
+    try {
+      const payload = {
+        ...form,
+        tipo: form.tipo === 'Outro' ? `Outro: ${tipoOutro.trim()}` : form.tipo,
+        cliente_id: clienteId || undefined,
+        cliente_nome: clienteNome,
+      }
+      if (isEdit) {
+        await atualizar.mutateAsync({ id: editData!._id, data: payload })
+      } else {
+        const { id } = await criar.mutateAsync(payload)
+        if (emailAprovacao.trim()) {
+          await enviarEmail.mutateAsync({ id, destinatario: emailAprovacao.trim(), tipo: 'aprovacao' })
+        }
       }
       onSuccess()
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -76,118 +78,85 @@ function NovaOSForm({ onSuccess, editData }: { onSuccess: () => void; editData?:
   ]
 
   return (
-    <Card>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="sm:col-span-2">
-          <Select
-            label="Cliente"
-            options={clienteOpts}
-            value={clienteId === '' && clienteManual ? '__manual__' : clienteId}
-            onChange={(e) => {
-              if (e.target.value === '__manual__') { setClienteId(''); setClienteManual('') }
-              else { setClienteId(e.target.value); setClienteManual('') }
-            }}
-          />
-        </div>
-        {(clienteId === '' && !clientes.find(c => c._id === clienteId)) && (
-          <div className="sm:col-span-2">
-            <Input label="Nome do cliente" value={clienteManual} onChange={(e) => setClienteManual(e.target.value)} />
-          </div>
-        )}
-        <div className={form.tipo === 'Outro' ? '' : 'sm:col-span-1'}>
-          <Select
-            label="Tipo de Serviço"
-            options={TIPOS_OS.map(t => ({ value: t, label: t }))}
-            value={form.tipo}
-            onChange={(e) => { setForm(f => ({ ...f, tipo: e.target.value })); setTipoOutro('') }}
-          />
-        </div>
-        {form.tipo === 'Outro' && (
-          <div>
-            <Input
-              label="Descreva o tipo de serviço"
-              placeholder="Ex: Troca de quadro elétrico..."
-              value={tipoOutro}
-              onChange={(e) => setTipoOutro(e.target.value)}
-            />
-          </div>
-        )}
+    <div className="flex flex-col gap-3">
+      <Select
+        label="Cliente"
+        options={clienteOpts}
+        value={clienteId === '' && clienteManual ? '__manual__' : clienteId}
+        onChange={(e) => {
+          if (e.target.value === '__manual__') { setClienteId(''); setClienteManual('') }
+          else { setClienteId(e.target.value); setClienteManual('') }
+        }}
+      />
+      {clienteId === '' && (
+        <Input label="Nome do cliente" value={clienteManual} onChange={(e) => setClienteManual(e.target.value)} />
+      )}
+      <Select
+        label="Tipo de Serviço"
+        options={TIPOS_OS.map(t => ({ value: t, label: t }))}
+        value={form.tipo}
+        onChange={(e) => { setForm(f => ({ ...f, tipo: e.target.value })); setTipoOutro('') }}
+      />
+      {form.tipo === 'Outro' && (
+        <Input label="Descreva o tipo" placeholder="Ex: Troca de quadro elétrico..." value={tipoOutro} onChange={(e) => setTipoOutro(e.target.value)} />
+      )}
+      <div className="grid grid-cols-2 gap-3">
         <Select
-          label="Status Inicial"
+          label="Status"
           options={Object.entries(STATUS_OS).map(([k, v]) => ({ value: k, label: v }))}
           value={form.status}
           onChange={(e) => setForm(f => ({ ...f, status: e.target.value as OrdemServico['status'] }))}
         />
-        <Input label="Data" type="date" value={form.data} onChange={(e) => setForm(f => ({ ...f, data: e.target.value }))} />
-        <Input label="Técnico Responsável" value={form.tecnico} onChange={(e) => setForm(f => ({ ...f, tecnico: e.target.value }))} />
-        <Input label="Local / Endereço" value={form.local} onChange={(e) => setForm(f => ({ ...f, local: e.target.value }))} />
         <Select
           label="Prioridade"
           options={['Normal', 'Alta', 'Urgente'].map(p => ({ value: p, label: p }))}
           value={form.prioridade}
           onChange={(e) => setForm(f => ({ ...f, prioridade: e.target.value as 'Normal' | 'Alta' | 'Urgente' }))}
         />
-        <div className="sm:col-span-2">
-          <label className="mb-1 block text-sm font-medium text-gray-700">Descrição / Escopo *</label>
-          <textarea rows={4} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#f0a500] focus:outline-none focus:ring-2 focus:ring-[#f0a500]/20" value={form.descricao} onChange={(e) => setForm(f => ({ ...f, descricao: e.target.value }))} />
-        </div>
-        <div className="sm:col-span-2">
-          <label className="mb-1 block text-sm font-medium text-gray-700">Observações Internas</label>
-          <textarea rows={2} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#f0a500] focus:outline-none focus:ring-2 focus:ring-[#f0a500]/20" value={form.observacoes} onChange={(e) => setForm(f => ({ ...f, observacoes: e.target.value }))} />
-        </div>
-        <div className="sm:col-span-2">
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            <span className="flex items-center gap-1.5">
-              <Mail size={14} className="text-[#f0a500]" />
-              Enviar aprovação por e-mail após criar <span className="text-gray-400 font-normal">(opcional)</span>
-            </span>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Input label="Data" type="date" value={form.data} onChange={(e) => setForm(f => ({ ...f, data: e.target.value }))} />
+        <Input label="Técnico" value={form.tecnico} onChange={(e) => setForm(f => ({ ...f, tecnico: e.target.value }))} />
+      </div>
+      <Input label="Local / Endereço" value={form.local} onChange={(e) => setForm(f => ({ ...f, local: e.target.value }))} />
+      <div>
+        <label className="mb-1 block text-sm font-medium text-gray-700">Descrição / Escopo *</label>
+        <textarea rows={3} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#f0a500] focus:outline-none focus:ring-2 focus:ring-[#f0a500]/20" value={form.descricao} onChange={(e) => setForm(f => ({ ...f, descricao: e.target.value }))} />
+      </div>
+      <div>
+        <label className="mb-1 block text-sm font-medium text-gray-700">Observações Internas</label>
+        <textarea rows={2} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#f0a500] focus:outline-none focus:ring-2 focus:ring-[#f0a500]/20" value={form.observacoes} onChange={(e) => setForm(f => ({ ...f, observacoes: e.target.value }))} />
+      </div>
+      {!isEdit && (
+        <div>
+          <label className="mb-1 flex items-center gap-1.5 text-sm font-medium text-gray-700">
+            <Mail size={13} className="text-[#f0a500]" />
+            Enviar aprovação por e-mail <span className="font-normal text-gray-400">(opcional)</span>
           </label>
-          <Input
-            type="email"
-            placeholder="email@cliente.com.br"
-            value={emailAprovacao}
-            onChange={(e) => setEmailAprovacao(e.target.value)}
-          />
+          <Input type="email" placeholder="email@cliente.com.br" value={emailAprovacao} onChange={(e) => setEmailAprovacao(e.target.value)} />
         </div>
-      </div>
-      {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
-      <div className="mt-4 flex justify-end">
-        <Button onClick={handleSubmit} disabled={criar.isPending || atualizar.isPending || enviarEmail.isPending}>
-          <span className="flex items-center gap-2">
-            {!isEdit && emailAprovacao.trim() ? <Send size={15} /> : null}
-            {isEdit ? 'Salvar Alterações' : emailAprovacao.trim() ? 'Criar e Enviar Aprovação' : 'Criar Ordem de Serviço'}
-          </span>
+      )}
+      {error && <p className="text-sm text-red-500">{error}</p>}
+      <div className="flex gap-3 pt-2">
+        <Button onClick={handleSubmit} disabled={saving} className="flex-1">
+          {saving ? 'Salvando...' : !isEdit && emailAprovacao.trim() ? <><Send size={14} /> Criar e Enviar</> : isEdit ? 'Salvar Alterações' : 'Criar OS'}
         </Button>
+        <Button variant="outline" onClick={onCancel} className="flex-1">Cancelar</Button>
       </div>
-    </Card>
+    </div>
   )
 }
 
-function ListaOS({ onEditar }: { onEditar: (os: OrdemServico) => void }) {
-  const [filtroStatus, setFiltroStatus] = useState('todos')
-  const [filtroTipo, setFiltroTipo] = useState('todos')
-  const [filtroBusca, setFiltroBusca] = useState('')
-  const [editId, setEditId] = useState<string | null>(null)
+function StatusDrawer({ os, open, onClose }: { os: OrdemServico | null; open: boolean; onClose: () => void }) {
+  const atualizar = useAtualizarOrdem()
   const [novoStatus, setNovoStatus] = useState('')
   const [obs, setObs] = useState('')
   const [emailConclusao, setEmailConclusao] = useState('')
-  const atualizar = useAtualizarOrdem()
-  const excluir = useExcluirOrdem()
-  const [excluirId, setExcluirId] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
 
-  const [emailModal, setEmailModal] = useState<{ open: boolean; os: OrdemServico | null }>({ open: false, os: null })
-  const [emailDestino, setEmailDestino] = useState('')
-  const [emailEnviando, setEmailEnviando] = useState(false)
-  const [emailFeedback, setEmailFeedback] = useState('')
-  const enviarEmail = useEnviarEmailOS()
-
-  const { data: ordens = [], isLoading } = useOrdens({
-    status: filtroStatus === 'todos' ? undefined : filtroStatus,
-    tipo: filtroTipo === 'todos' ? undefined : filtroTipo,
-    cliente: filtroBusca || undefined,
-  })
-
-  async function atualizarStatus(id: string) {
+  async function salvar() {
+    if (!os || !novoStatus) return
+    setSaving(true)
     const payload: Partial<OrdemServico> & { _email_conclusao?: string } = {
       status: novoStatus as OrdemServico['status'],
       obs_status: obs,
@@ -195,18 +164,145 @@ function ListaOS({ onEditar }: { onEditar: (os: OrdemServico) => void }) {
     if (novoStatus === 'concluida' && emailConclusao.trim()) {
       payload._email_conclusao = emailConclusao.trim()
     }
-    await atualizar.mutateAsync({ id, data: payload })
-    setEditId(null)
+    await atualizar.mutateAsync({ id: os._id, data: payload })
+    setSaving(false)
     setNovoStatus('')
     setObs('')
     setEmailConclusao('')
+    onClose()
   }
 
-  function abrirModalEmail(os: OrdemServico) {
-    setEmailDestino('')
-    setEmailFeedback('')
-    setEmailModal({ open: true, os })
-  }
+  return (
+    <BottomDrawer open={open} onClose={onClose} title="Atualizar Status">
+      <div className="flex flex-col gap-3">
+        {os && (
+          <p className="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-600">
+            <span className="font-medium">{os.numero}</span> · {os.cliente_nome}
+          </p>
+        )}
+        <Select
+          label="Novo Status"
+          options={Object.entries(STATUS_OS).map(([k, v]) => ({ value: k, label: v }))}
+          value={novoStatus}
+          onChange={(e) => setNovoStatus(e.target.value)}
+        />
+        <Input label="Observação" value={obs} onChange={(e) => setObs(e.target.value)} placeholder="Opcional" />
+        {novoStatus === 'concluida' && (
+          <Input label="Notificar cliente (e-mail)" type="email" value={emailConclusao} onChange={(e) => setEmailConclusao(e.target.value)} placeholder="email@cliente.com (opcional)" />
+        )}
+        <div className="flex gap-3 pt-2">
+          <Button onClick={salvar} disabled={saving || !novoStatus} className="flex-1">
+            {saving ? 'Salvando...' : 'Salvar Status'}
+          </Button>
+          <Button variant="outline" onClick={onClose} className="flex-1">Cancelar</Button>
+        </div>
+      </div>
+    </BottomDrawer>
+  )
+}
+
+function OSCard({ os, onEdit, onStatus, onEmail, onExcluir }: {
+  os: OrdemServico
+  onEdit: () => void
+  onStatus: () => void
+  onEmail: () => void
+  onExcluir: () => void
+}) {
+  const [open, setOpen] = useState(false)
+
+  const prioridadeCor = os.prioridade === 'Urgente'
+    ? 'bg-red-100 text-red-700'
+    : os.prioridade === 'Alta'
+    ? 'bg-amber-100 text-amber-700'
+    : 'bg-gray-100 text-gray-600'
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex w-full items-start gap-3 px-4 py-3.5 text-left active:bg-gray-50"
+      >
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1e3050]/10 mt-0.5">
+          <ClipboardList size={16} className="text-[#1e3050]" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-mono text-xs text-gray-400">{os.numero}</span>
+            <Badge label={STATUS_OS[os.status] ?? os.status} className={`${STATUS_OS_COR[os.status]} text-xs`} />
+            {os.prioridade && os.prioridade !== 'Normal' && (
+              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${prioridadeCor}`}>{os.prioridade}</span>
+            )}
+          </div>
+          <p className="mt-0.5 truncate font-semibold text-[#1e3050] text-sm">{os.cliente_nome}</p>
+          <p className="text-xs text-gray-400">{os.tipo} · {dataBr(os.data)}</p>
+        </div>
+        <ChevronDown size={16} className={`mt-1 shrink-0 text-gray-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      {open && (
+        <div className="border-t border-gray-100 bg-gray-50/60 px-4 pb-4 pt-3">
+          <div className="flex flex-col gap-1.5 text-sm text-gray-600">
+            {os.local && (
+              <p className="flex items-center gap-2 text-xs">
+                <MapPin size={12} className="shrink-0 text-gray-400" /> {os.local}
+              </p>
+            )}
+            {os.tecnico && (
+              <p className="flex items-center gap-2 text-xs">
+                <User size={12} className="shrink-0 text-gray-400" /> {os.tecnico}
+              </p>
+            )}
+            {os.descricao && <p className="text-xs text-gray-500 mt-1">{os.descricao}</p>}
+            {os.obs_status && (
+              <p className="text-xs italic text-gray-400">Obs: {os.obs_status}</p>
+            )}
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button onClick={onEdit} className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm ring-1 ring-gray-200 active:bg-gray-50">
+              Editar
+            </button>
+            <button onClick={onStatus} className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-[#1e3050] shadow-sm ring-1 ring-gray-200 active:bg-gray-50">
+              Status
+            </button>
+            <button onClick={onEmail} className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-[#f0a500] shadow-sm ring-1 ring-amber-200 active:bg-amber-50">
+              <Mail size={12} /> E-mail
+            </button>
+            <button onClick={onExcluir} className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-red-600 shadow-sm ring-1 ring-red-200 active:bg-red-50">
+              <Trash2 size={12} /> Excluir
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function OrdensServico() {
+  const [filtroStatus, setFiltroStatus] = useState('todos')
+  const [filtroTipo, setFiltroTipo] = useState('todos')
+  const [filtroBusca, setFiltroBusca] = useState('')
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [statusDrawerOpen, setStatusDrawerOpen] = useState(false)
+  const [editOS, setEditOS] = useState<OrdemServico | null>(null)
+  const [statusOS, setStatusOS] = useState<OrdemServico | null>(null)
+  const [excluirId, setExcluirId] = useState<string | null>(null)
+  const [emailModal, setEmailModal] = useState<{ open: boolean; os: OrdemServico | null }>({ open: false, os: null })
+  const [emailDestino, setEmailDestino] = useState('')
+  const [emailEnviando, setEmailEnviando] = useState(false)
+  const [emailFeedback, setEmailFeedback] = useState('')
+
+  const enviarEmail = useEnviarEmailOS()
+  const excluir = useExcluirOrdem()
+
+  const { data: ordens = [], isLoading } = useOrdens({
+    status: filtroStatus === 'todos' ? undefined : filtroStatus,
+    tipo: filtroTipo === 'todos' ? undefined : filtroTipo,
+    cliente: filtroBusca || undefined,
+  })
+
+  function abrirNovo() { setEditOS(null); setDrawerOpen(true) }
+  function abrirEditar(os: OrdemServico) { setEditOS(os); setDrawerOpen(true) }
+  function abrirStatus(os: OrdemServico) { setStatusOS(os); setStatusDrawerOpen(true) }
 
   async function handleEnviarEmail() {
     if (!emailModal.os || !emailDestino.trim()) return
@@ -216,137 +312,87 @@ function ListaOS({ onEditar }: { onEditar: (os: OrdemServico) => void }) {
       await enviarEmail.mutateAsync({ id: emailModal.os._id, destinatario: emailDestino.trim(), tipo: 'aprovacao' })
       setEmailFeedback('E-mail enviado com sucesso!')
     } catch {
-      setEmailFeedback('Erro ao enviar e-mail. Verifique as configurações SMTP.')
+      setEmailFeedback('Erro ao enviar e-mail.')
     } finally {
       setEmailEnviando(false)
     }
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Select
-          label="Status"
-          options={[{ value: 'todos', label: 'Todos os status' }, ...Object.entries(STATUS_OS).map(([k, v]) => ({ value: k, label: v }))]}
-          value={filtroStatus}
-          onChange={(e) => setFiltroStatus(e.target.value)}
-        />
-        <Select
-          label="Tipo"
-          options={[{ value: 'todos', label: 'Todos os tipos' }, ...TIPOS_OS.map(t => ({ value: t, label: t }))]}
-          value={filtroTipo}
-          onChange={(e) => setFiltroTipo(e.target.value)}
-        />
-        <Input label="Busca de Cliente" placeholder="Nome do cliente..." value={filtroBusca} onChange={(e) => setFiltroBusca(e.target.value)} />
+    <div className="flex flex-col gap-4 pb-24">
+      <div>
+        <h1 className="text-xl font-bold text-[#1e3050]">Ordens de Serviço</h1>
+        {!isLoading && <p className="text-xs text-gray-400">{ordens.length} ordem{ordens.length !== 1 ? 's' : ''}</p>}
       </div>
 
-      {isLoading ? <p className="text-sm text-gray-400">Carregando...</p> : (
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-          <table className="w-full text-sm">
-            <thead className="bg-[#1e3050] text-white">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold">Nº</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold">Cliente</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold">Tipo</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold">Data</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ordens.map((os) => (
-                <>
-                  <tr key={os._id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="px-4 py-3 font-mono text-xs">{os.numero}</td>
-                    <td className="px-4 py-3">{os.cliente_nome}</td>
-                    <td className="px-4 py-3 text-xs text-gray-600">{os.tipo}</td>
-                    <td className="px-4 py-3">
-                      <Badge label={STATUS_OS[os.status] ?? os.status} className={STATUS_OS_COR[os.status]} />
-                    </td>
-                    <td className="px-4 py-3 text-xs text-gray-500">{dataBr(os.data)}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <button
-                          title="Editar OS"
-                          onClick={() => onEditar(os)}
-                          className="rounded-lg p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition"
-                        >
-                          <Pencil size={15} />
-                        </button>
-                        <Button variant="ghost" size="sm" onClick={() => { setEditId(os._id); setNovoStatus(os.status); setEmailConclusao('') }}>
-                          Status
-                        </Button>
-                        <button
-                          title="Enviar por e-mail para aprovação"
-                          onClick={() => abrirModalEmail(os)}
-                          className="rounded-lg p-1.5 text-gray-400 hover:bg-[#f0a500]/10 hover:text-[#f0a500] transition"
-                        >
-                          <Mail size={16} />
-                        </button>
-                        <button
-                          title="Excluir OS"
-                          onClick={() => setExcluirId(os._id)}
-                          className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  {editId === os._id && (
-                    <tr className="bg-amber-50">
-                      <td colSpan={6} className="px-4 py-3">
-                        <div className="flex flex-wrap items-end gap-3">
-                          <Select
-                            label="Novo Status"
-                            options={Object.entries(STATUS_OS).map(([k, v]) => ({ value: k, label: v }))}
-                            value={novoStatus}
-                            onChange={(e) => setNovoStatus(e.target.value)}
-                          />
-                          <Input label="Observação" value={obs} onChange={(e) => setObs(e.target.value)} placeholder="Opcional" />
-                          {novoStatus === 'concluida' && (
-                            <Input
-                              label="Notificar cliente (e-mail)"
-                              type="email"
-                              value={emailConclusao}
-                              onChange={(e) => setEmailConclusao(e.target.value)}
-                              placeholder="email@cliente.com (opcional)"
-                            />
-                          )}
-                          <Button size="sm" onClick={() => atualizarStatus(os._id)} disabled={atualizar.isPending}>Salvar</Button>
-                          <Button variant="ghost" size="sm" onClick={() => setEditId(null)}>Cancelar</Button>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </>
-              ))}
-              {ordens.length === 0 && (
-                <tr><td colSpan={6} className="px-4 py-6 text-center text-sm text-gray-400">Nenhuma OS encontrada.</td></tr>
-              )}
-            </tbody>
-          </table>
+      <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-2 gap-2">
+          <Select
+            options={[{ value: 'todos', label: 'Todos os status' }, ...Object.entries(STATUS_OS).map(([k, v]) => ({ value: k, label: v }))]}
+            value={filtroStatus}
+            onChange={(e) => setFiltroStatus(e.target.value)}
+          />
+          <Select
+            options={[{ value: 'todos', label: 'Todos os tipos' }, ...TIPOS_OS.map(t => ({ value: t, label: t }))]}
+            value={filtroTipo}
+            onChange={(e) => setFiltroTipo(e.target.value)}
+          />
+        </div>
+        <input
+          className="w-full rounded-xl border border-gray-200 bg-white py-2.5 px-3 text-sm shadow-sm focus:border-[#f0a500] focus:outline-none focus:ring-2 focus:ring-[#f0a500]/20"
+          placeholder="Buscar por cliente..."
+          value={filtroBusca}
+          onChange={e => setFiltroBusca(e.target.value)}
+        />
+      </div>
+
+      {isLoading ? (
+        <p className="py-12 text-center text-sm text-gray-400">Carregando...</p>
+      ) : ordens.length === 0 ? (
+        <div className="flex flex-col items-center gap-2 py-12 text-gray-400">
+          <ClipboardList size={32} className="opacity-30" />
+          <p className="text-sm">Nenhuma OS encontrada.</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {ordens.map(os => (
+            <OSCard
+              key={os._id}
+              os={os}
+              onEdit={() => abrirEditar(os)}
+              onStatus={() => abrirStatus(os)}
+              onEmail={() => { setEmailDestino(''); setEmailFeedback(''); setEmailModal({ open: true, os }) }}
+              onExcluir={() => setExcluirId(os._id)}
+            />
+          ))}
         </div>
       )}
 
-      <Modal open={emailModal.open} onClose={() => setEmailModal({ open: false, os: null })} title="Enviar OS por E-mail para Aprovação">
+      {/* FAB */}
+      <button
+        onClick={abrirNovo}
+        className="fixed bottom-6 right-6 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[#f0a500] text-[#1e3050] shadow-lg transition-transform active:scale-95 hover:bg-[#d4920a]"
+        title="Nova OS"
+      >
+        <Plus size={26} strokeWidth={2.5} />
+      </button>
+
+      <BottomDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title={editOS ? 'Editar OS' : 'Nova OS'}>
+        <OSForm editData={editOS} onSuccess={() => setDrawerOpen(false)} onCancel={() => setDrawerOpen(false)} />
+      </BottomDrawer>
+
+      <StatusDrawer os={statusOS} open={statusDrawerOpen} onClose={() => setStatusDrawerOpen(false)} />
+
+      <Modal open={emailModal.open} onClose={() => setEmailModal({ open: false, os: null })} title="Enviar OS por E-mail">
         {emailModal.os && (
           <div className="flex flex-col gap-4">
             <div className="rounded-lg bg-gray-50 px-4 py-3 text-sm">
               <p className="font-medium text-gray-800">{emailModal.os.numero} · {emailModal.os.cliente_nome}</p>
               <p className="text-gray-500">{emailModal.os.tipo} · {dataBr(emailModal.os.data)}</p>
             </div>
-            <Input
-              label="E-mail do destinatário"
-              type="email"
-              value={emailDestino}
-              onChange={(e) => setEmailDestino(e.target.value)}
-              placeholder="email@cliente.com.br"
-            />
+            <Input label="E-mail do destinatário" type="email" value={emailDestino} onChange={(e) => setEmailDestino(e.target.value)} placeholder="email@cliente.com.br" />
             {emailFeedback && (
-              <p className={`text-sm ${emailFeedback.includes('sucesso') ? 'text-green-600' : 'text-red-500'}`}>
-                {emailFeedback}
-              </p>
+              <p className={`text-sm ${emailFeedback.includes('sucesso') ? 'text-green-600' : 'text-red-500'}`}>{emailFeedback}</p>
             )}
             <div className="flex justify-end gap-2">
               <Button variant="ghost" size="sm" onClick={() => setEmailModal({ open: false, os: null })}>Cancelar</Button>
@@ -366,35 +412,6 @@ function ListaOS({ onEditar }: { onEditar: (os: OrdemServico) => void }) {
           loading={excluir.isPending}
         />
       )}
-    </div>
-  )
-}
-
-export default function OrdensServico() {
-  const [tab, setTab] = useState(0)
-  const [editOS, setEditOS] = useState<OrdemServico | null>(null)
-
-  function handleEditar(os: OrdemServico) {
-    setEditOS(os)
-    setTab(1)
-  }
-
-  function handleSuccess() {
-    setEditOS(null)
-    setTab(0)
-  }
-
-  return (
-    <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold text-[#1e3050]">Ordens de Serviço</h1>
-      <Tabs
-        tabs={[
-          { label: '📋 Lista de OS', content: <ListaOS onEditar={handleEditar} /> },
-          { label: editOS ? '✏️ Editar OS' : '➕ Nova OS', content: <NovaOSForm editData={editOS} onSuccess={handleSuccess} /> },
-        ]}
-        defaultIndex={tab}
-        key={`${tab}-${editOS?._id ?? 'new'}`}
-      />
     </div>
   )
 }
