@@ -8,7 +8,7 @@ import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Select from '../components/ui/Select'
 import BottomDrawer from '../components/ui/BottomDrawer'
-import Modal from '../components/ui/Modal'
+import MapaModal from '../components/ui/MapaModal'
 import { useAuth } from '../hooks/useAuth'
 import { Navigate } from 'react-router'
 
@@ -358,47 +358,6 @@ export default function Usuarios() {
   )
 }
 
-function MapaModal({ lat, lon, endereco, onClose }: {
-  lat: number
-  lon: number
-  endereco?: string
-  onClose: () => void
-}) {
-  const delta = 0.012
-  const bbox = `${lon - delta},${lat - delta},${lon + delta},${lat + delta}`
-  const src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lon}`
-
-  return (
-    <Modal open onClose={onClose} title="Localização do Login">
-      <div className="flex flex-col gap-3">
-        {endereco && (
-          <p className="flex items-center gap-1.5 text-sm text-gray-600">
-            <MapPin size={14} className="shrink-0 text-[#f0a500]" />
-            {endereco}
-          </p>
-        )}
-        <div className="overflow-hidden rounded-xl border border-gray-200">
-          <iframe
-            src={src}
-            width="100%"
-            height="320"
-            className="block"
-            title="Mapa de localização"
-            loading="lazy"
-          />
-        </div>
-        <a
-          href={`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=15/${lat}/${lon}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-center text-xs text-blue-500 hover:underline"
-        >
-          Abrir no OpenStreetMap
-        </a>
-      </div>
-    </Modal>
-  )
-}
 
 function LoginLogsSection() {
   const { data: logs = [], isLoading } = useQuery({
@@ -464,7 +423,8 @@ function LoginLogsSection() {
         <MapaModal
           lat={Number(mapaLog.latitude)}
           lon={Number(mapaLog.longitude)}
-          endereco={mapaLog.endereco ?? undefined}
+          address={mapaLog.endereco ?? undefined}
+          titulo="Localização do Login"
           onClose={() => setMapaLog(null)}
         />
       )}

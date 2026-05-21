@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Search, ChevronDown, Edit2, UserX, Trash2, Plus, Mail, MapPin, Building2 } from 'lucide-react'
+import { Search, ChevronDown, Edit2, UserX, Trash2, Plus, Mail, MapPin, Building2, Map } from 'lucide-react'
 import { useClientes, useCriarCliente, useAtualizarCliente, useExcluirCliente } from '../hooks/useClientes'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import BottomDrawer from '../components/ui/BottomDrawer'
+import MapaModal from '../components/ui/MapaModal'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import type { Cliente } from '../types'
@@ -94,7 +95,10 @@ function ClienteCard({ cliente, onEdit, onExcluir }: {
   onExcluir: () => void
 }) {
   const [open, setOpen] = useState(false)
+  const [mapaAberto, setMapaAberto] = useState(false)
   const atualizar = useAtualizarCliente()
+
+  const enderecoCompleto = [cliente.endereco, cliente.cidade, cliente.estado].filter(Boolean).join(', ')
 
   async function desativar() {
     await atualizar.mutateAsync({ id: cliente._id, data: { ativo: false } })
@@ -127,11 +131,19 @@ function ClienteCard({ cliente, onEdit, onExcluir }: {
       {open && (
         <div className="border-t border-gray-100 bg-gray-50/60 px-4 pb-4 pt-3">
           <div className="flex flex-col gap-2 text-sm text-gray-600">
-            {cliente.endereco && (
-              <p className="flex items-start gap-2">
-                <MapPin size={13} className="mt-0.5 shrink-0 text-gray-400" />
-                {cliente.endereco}
-              </p>
+            {(cliente.endereco || cliente.cidade) && (
+              <div className="flex items-start justify-between gap-2">
+                <p className="flex items-start gap-2">
+                  <MapPin size={13} className="mt-0.5 shrink-0 text-gray-400" />
+                  {[cliente.endereco, cliente.cidade, cliente.estado].filter(Boolean).join(', ')}
+                </p>
+                <button
+                  onClick={() => setMapaAberto(true)}
+                  className="flex shrink-0 items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-100 transition"
+                >
+                  <Map size={11} /> Mapa
+                </button>
+              </div>
             )}
             {cliente.telefone && (
               <a
@@ -187,6 +199,14 @@ function ClienteCard({ cliente, onEdit, onExcluir }: {
             </button>
           </div>
         </div>
+      )}
+
+      {mapaAberto && enderecoCompleto && (
+        <MapaModal
+          address={enderecoCompleto}
+          titulo={cliente.nome}
+          onClose={() => setMapaAberto(false)}
+        />
       )}
     </div>
   )
