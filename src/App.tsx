@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthContext, type AuthContextValue } from './hooks/useAuth'
+import { buscarMeuPerfil } from './api/auth'
 import { useAuth } from './hooks/useAuth'
 import type { Usuario } from './types'
 import Layout from './components/layout/Layout'
@@ -55,6 +56,13 @@ function AuthProvider({ children }: { children: ReactNode }) {
       setUser(updated)
     }
   }
+
+  useEffect(() => {
+    if (!token) return
+    buscarMeuPerfil()
+      .then((perfil) => setUser((u) => u ? { ...u, ...perfil } : perfil))
+      .catch(() => {})
+  }, [token])
 
   const value: AuthContextValue = { user, token, login: authLogin, logout, updateUser }
 

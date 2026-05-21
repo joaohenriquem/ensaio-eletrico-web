@@ -15,6 +15,11 @@ export async function changePassword(novaSenha: string): Promise<void> {
   await api.post('/auth/change-password', { novaSenha })
 }
 
+export async function buscarMeuPerfil(): Promise<import('../types').Usuario> {
+  const { data } = await api.get<import('../types').Usuario>('/auth/me')
+  return data
+}
+
 export async function atualizarFotoPerfil(foto_url: string): Promise<void> {
   await api.put('/auth/me/foto', { foto_url })
 }
