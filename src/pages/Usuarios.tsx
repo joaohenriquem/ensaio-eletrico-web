@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { CheckCircle, XCircle, Clock, Users, ShieldCheck, MapPin, History, Pencil, Plus } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Users, ShieldCheck, MapPin, History, Pencil, Plus, Map } from 'lucide-react'
 import { listarUsuarios, aprovarUsuario, rejeitarUsuario, listarLoginLogs, editarUsuario, criarUsuarioAdmin } from '../api/auth'
 import { uploadImagem } from '../api/uploads'
 import type { UsuarioAdmin } from '../types'
@@ -8,6 +8,7 @@ import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Select from '../components/ui/Select'
 import BottomDrawer from '../components/ui/BottomDrawer'
+import Modal from '../components/ui/Modal'
 import { useAuth } from '../hooks/useAuth'
 import { Navigate } from 'react-router'
 
@@ -357,11 +358,54 @@ export default function Usuarios() {
   )
 }
 
+function MapaModal({ lat, lon, endereco, onClose }: {
+  lat: number
+  lon: number
+  endereco?: string
+  onClose: () => void
+}) {
+  const delta = 0.012
+  const bbox = `${lon - delta},${lat - delta},${lon + delta},${lat + delta}`
+  const src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lon}`
+
+  return (
+    <Modal open onClose={onClose} title="Localização do Login">
+      <div className="flex flex-col gap-3">
+        {endereco && (
+          <p className="flex items-center gap-1.5 text-sm text-gray-600">
+            <MapPin size={14} className="shrink-0 text-[#f0a500]" />
+            {endereco}
+          </p>
+        )}
+        <div className="overflow-hidden rounded-xl border border-gray-200">
+          <iframe
+            src={src}
+            width="100%"
+            height="320"
+            className="block"
+            title="Mapa de localização"
+            loading="lazy"
+          />
+        </div>
+        <a
+          href={`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=15/${lat}/${lon}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-center text-xs text-blue-500 hover:underline"
+        >
+          Abrir no OpenStreetMap
+        </a>
+      </div>
+    </Modal>
+  )
+}
+
 function LoginLogsSection() {
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ['login-logs'],
     queryFn: listarLoginLogs,
   })
+  const [mapaLog, setMapaLog] = useState<typeof logs[0] | null>(null)
 
   function formatData(iso: string) {
     return new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
@@ -399,10 +443,30 @@ function LoginLogsSection() {
                   <p className="text-xs text-gray-400">Localização não disponível</p>
                 )}
               </div>
-              <span className="shrink-0 text-xs text-gray-400">{formatData(log.criado_em)}</span>
+              <div className="flex shrink-0 flex-col items-end gap-1">
+                <span className="text-xs text-gray-400">{formatData(log.criado_em)}</span>
+                {log.latitude && (
+                  <button
+                    onClick={() => setMapaLog(log)}
+                    className="flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-100 active:bg-blue-200 transition"
+                    title="Ver no mapa"
+                  >
+                    <Map size={11} /> Mapa
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>
+      )}
+
+      {mapaLog?.latitude && (
+        <MapaModal
+          lat={Number(mapaLog.latitude)}
+          lon={Number(mapaLog.longitude)}
+          endereco={mapaLog.endereco ?? undefined}
+          onClose={() => setMapaLog(null)}
+        />
       )}
     </div>
   )
