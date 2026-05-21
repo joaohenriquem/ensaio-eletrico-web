@@ -44,6 +44,7 @@ export interface DadosEdicaoUsuario {
   perfil?: string
   novaSenha?: string
   trocar_senha?: boolean
+  foto_url?: string
 }
 
 export async function editarUsuario(id: string, dados: DadosEdicaoUsuario): Promise<void> {
