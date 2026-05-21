@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { CheckCircle, XCircle, Clock, Users, ShieldCheck, MapPin, History, Pencil } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Users, ShieldCheck, MapPin, History, Pencil, Plus } from 'lucide-react'
 import { listarUsuarios, aprovarUsuario, rejeitarUsuario, listarLoginLogs, editarUsuario, criarUsuarioAdmin } from '../api/auth'
 import { uploadImagem } from '../api/uploads'
 import type { UsuarioAdmin } from '../types'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Select from '../components/ui/Select'
+import BottomDrawer from '../components/ui/BottomDrawer'
 import { useAuth } from '../hooks/useAuth'
 import { Navigate } from 'react-router'
 
@@ -60,7 +61,7 @@ const PERFIS = [
   { value: 'Admin', label: 'Administrador' },
 ]
 
-function ModalCriar({ onClose }: { onClose: () => void }) {
+function CriarUsuarioForm({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient()
   const [form, setForm] = useState({
     nome: '', email: '', username: '', senha: '', perfil: 'Técnico', trocar_senha: true,
@@ -77,33 +78,28 @@ function ModalCriar({ onClose }: { onClose: () => void }) {
   })
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">Novo Usuário</h2>
-        <div className="flex flex-col gap-3">
-          <Input label="Nome *" value={form.nome} onChange={(e) => setForm(f => ({ ...f, nome: e.target.value }))} autoFocus />
-          <Input label="E-mail *" type="email" value={form.email} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} />
-          <Input label="Usuário *" value={form.username} onChange={(e) => setForm(f => ({ ...f, username: e.target.value }))} />
-          <Select label="Perfil" options={PERFIS} value={form.perfil} onChange={(e) => setForm(f => ({ ...f, perfil: e.target.value }))} />
-          <Input label="Senha inicial *" type="password" value={form.senha} onChange={(e) => setForm(f => ({ ...f, senha: e.target.value }))} placeholder="Mínimo 6 caracteres" />
-          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-            <input type="checkbox" checked={form.trocar_senha} onChange={(e) => setForm(f => ({ ...f, trocar_senha: e.target.checked }))} className="accent-[#f0a500]" />
-            Forçar troca de senha no primeiro login
-          </label>
-        </div>
-        {erro && <p className="mt-3 text-sm text-red-500">{erro}</p>}
-        <div className="mt-5 flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose} disabled={mut.isPending}>Cancelar</Button>
-          <Button onClick={() => mut.mutate()} disabled={mut.isPending}>
-            {mut.isPending ? 'Criando...' : 'Criar usuário'}
-          </Button>
-        </div>
+    <div className="flex flex-col gap-3">
+      <Input label="Nome *" value={form.nome} onChange={(e) => setForm(f => ({ ...f, nome: e.target.value }))} autoFocus />
+      <Input label="E-mail *" type="email" value={form.email} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} />
+      <Input label="Usuário *" value={form.username} onChange={(e) => setForm(f => ({ ...f, username: e.target.value }))} />
+      <Select label="Perfil" options={PERFIS} value={form.perfil} onChange={(e) => setForm(f => ({ ...f, perfil: e.target.value }))} />
+      <Input label="Senha inicial *" type="password" value={form.senha} onChange={(e) => setForm(f => ({ ...f, senha: e.target.value }))} placeholder="Mínimo 6 caracteres" />
+      <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+        <input type="checkbox" checked={form.trocar_senha} onChange={(e) => setForm(f => ({ ...f, trocar_senha: e.target.checked }))} className="accent-[#f0a500]" />
+        Forçar troca de senha no primeiro login
+      </label>
+      {erro && <p className="text-sm text-red-500">{erro}</p>}
+      <div className="flex gap-3 pt-2">
+        <Button onClick={() => mut.mutate()} disabled={mut.isPending} className="flex-1">
+          {mut.isPending ? 'Criando...' : 'Criar Usuário'}
+        </Button>
+        <Button variant="outline" onClick={onClose} disabled={mut.isPending} className="flex-1">Cancelar</Button>
       </div>
     </div>
   )
 }
 
-function ModalEditar({ usuario, onClose }: { usuario: UsuarioAdmin; onClose: () => void }) {
+function EditarUsuarioForm({ usuario, onClose }: { usuario: UsuarioAdmin; onClose: () => void }) {
   const qc = useQueryClient()
   const [form, setForm] = useState({
     nome: usuario.nome,
@@ -115,6 +111,7 @@ function ModalEditar({ usuario, onClose }: { usuario: UsuarioAdmin; onClose: () 
     foto_url: usuario.foto_url ?? '',
   })
   const [uploadingFoto, setUploadingFoto] = useState(false)
+  const [erro, setErro] = useState('')
 
   async function handleFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -128,7 +125,6 @@ function ModalEditar({ usuario, onClose }: { usuario: UsuarioAdmin; onClose: () 
       e.target.value = ''
     }
   }
-  const [erro, setErro] = useState('')
 
   const mut = useMutation({
     mutationFn: () => editarUsuario(usuario.id, {
@@ -140,10 +136,7 @@ function ModalEditar({ usuario, onClose }: { usuario: UsuarioAdmin; onClose: () 
       trocar_senha: form.novaSenha ? true : form.trocarSenha,
       foto_url: form.foto_url || undefined,
     }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['usuarios'] })
-      onClose()
-    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['usuarios'] }); onClose() },
     onError: (err: unknown) => {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
       setErro(msg ?? 'Erro ao salvar.')
@@ -151,51 +144,46 @@ function ModalEditar({ usuario, onClose }: { usuario: UsuarioAdmin; onClose: () 
   })
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">Editar usuário</h2>
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-4">
-            <label className="relative cursor-pointer" title="Alterar foto">
-              {form.foto_url ? (
-                <img src={form.foto_url} alt={form.nome} className="h-16 w-16 rounded-full object-cover ring-2 ring-gray-200" />
-              ) : (
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#1e3050] text-xl font-bold text-[#f0a500]">
-                  {form.nome.charAt(0).toUpperCase()}
-                </div>
-              )}
-              {uploadingFoto && (
-                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40">
-                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                </div>
-              )}
-              <input type="file" accept="image/*" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" onChange={handleFoto} disabled={uploadingFoto} />
-            </label>
-            <p className="text-sm text-gray-500">Clique na foto para alterar</p>
-          </div>
-          <Input label="Nome" value={form.nome} onChange={(e) => setForm(f => ({ ...f, nome: e.target.value }))} />
-          <Input label="E-mail" type="email" value={form.email} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} />
-          <Input label="Usuário" value={form.username} onChange={(e) => setForm(f => ({ ...f, username: e.target.value }))} />
-          <Select label="Perfil" options={PERFIS} value={form.perfil} onChange={(e) => setForm(f => ({ ...f, perfil: e.target.value }))} />
-          <Input label="Nova senha (deixe em branco para manter)" type="password" value={form.novaSenha} onChange={(e) => setForm(f => ({ ...f, novaSenha: e.target.value }))} placeholder="••••••••" />
-          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={form.trocarSenha || !!form.novaSenha}
-              onChange={(e) => setForm(f => ({ ...f, trocarSenha: e.target.checked }))}
-              disabled={!!form.novaSenha}
-              className="accent-[#f0a500]"
-            />
-            Forçar troca de senha no próximo login
-          </label>
-        </div>
-        {erro && <p className="mt-3 text-sm text-red-500">{erro}</p>}
-        <div className="mt-5 flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose} disabled={mut.isPending}>Cancelar</Button>
-          <Button onClick={() => mut.mutate()} disabled={mut.isPending}>
-            {mut.isPending ? 'Salvando...' : 'Salvar'}
-          </Button>
-        </div>
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-4">
+        <label className="relative cursor-pointer" title="Alterar foto">
+          {form.foto_url ? (
+            <img src={form.foto_url} alt={form.nome} className="h-16 w-16 rounded-full object-cover ring-2 ring-gray-200" />
+          ) : (
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#1e3050] text-xl font-bold text-[#f0a500]">
+              {form.nome.charAt(0).toUpperCase()}
+            </div>
+          )}
+          {uploadingFoto && (
+            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            </div>
+          )}
+          <input type="file" accept="image/*" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" onChange={handleFoto} disabled={uploadingFoto} />
+        </label>
+        <p className="text-sm text-gray-500">Clique na foto para alterar</p>
+      </div>
+      <Input label="Nome" value={form.nome} onChange={(e) => setForm(f => ({ ...f, nome: e.target.value }))} />
+      <Input label="E-mail" type="email" value={form.email} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} />
+      <Input label="Usuário" value={form.username} onChange={(e) => setForm(f => ({ ...f, username: e.target.value }))} />
+      <Select label="Perfil" options={PERFIS} value={form.perfil} onChange={(e) => setForm(f => ({ ...f, perfil: e.target.value }))} />
+      <Input label="Nova senha (em branco para manter)" type="password" value={form.novaSenha} onChange={(e) => setForm(f => ({ ...f, novaSenha: e.target.value }))} placeholder="••••••••" />
+      <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={form.trocarSenha || !!form.novaSenha}
+          onChange={(e) => setForm(f => ({ ...f, trocarSenha: e.target.checked }))}
+          disabled={!!form.novaSenha}
+          className="accent-[#f0a500]"
+        />
+        Forçar troca de senha no próximo login
+      </label>
+      {erro && <p className="text-sm text-red-500">{erro}</p>}
+      <div className="flex gap-3 pt-2">
+        <Button onClick={() => mut.mutate()} disabled={mut.isPending} className="flex-1">
+          {mut.isPending ? 'Salvando...' : 'Salvar'}
+        </Button>
+        <Button variant="outline" onClick={onClose} disabled={mut.isPending} className="flex-1">Cancelar</Button>
       </div>
     </div>
   )
@@ -245,17 +233,12 @@ export default function Usuarios() {
           <h1 className="text-xl font-bold text-gray-900">Usuários</h1>
           <p className="text-sm text-gray-500">Gerencie o acesso ao sistema</p>
         </div>
-        <div className="ml-auto flex items-center gap-2">
-          {pendentes > 0 && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-100 px-3 py-1 text-sm font-semibold text-yellow-800">
-              <Clock size={14} />
-              {pendentes} pendente{pendentes > 1 ? 's' : ''}
-            </span>
-          )}
-          <Button size="sm" onClick={() => setCriando(true)}>
-            + Novo Usuário
-          </Button>
-        </div>
+        {pendentes > 0 && (
+          <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-yellow-100 px-3 py-1 text-sm font-semibold text-yellow-800">
+            <Clock size={14} />
+            {pendentes} pendente{pendentes > 1 ? 's' : ''}
+          </span>
+        )}
       </div>
 
       {/* Filtros */}
@@ -364,11 +347,22 @@ export default function Usuarios() {
         </div>
       )}
 
-      {criando && <ModalCriar onClose={() => setCriando(false)} />}
+      {/* FAB */}
+      <button
+        onClick={() => setCriando(true)}
+        className="fixed bottom-6 right-6 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[#f0a500] text-[#1e3050] shadow-lg transition-transform active:scale-95 hover:bg-[#d4920a]"
+        title="Novo Usuário"
+      >
+        <Plus size={26} strokeWidth={2.5} />
+      </button>
 
-      {editando && (
-        <ModalEditar usuario={editando} onClose={() => setEditando(null)} />
-      )}
+      <BottomDrawer open={criando} onClose={() => setCriando(false)} title="Novo Usuário">
+        <CriarUsuarioForm onClose={() => setCriando(false)} />
+      </BottomDrawer>
+
+      <BottomDrawer open={!!editando} onClose={() => setEditando(null)} title="Editar Usuário">
+        {editando && <EditarUsuarioForm usuario={editando} onClose={() => setEditando(null)} />}
+      </BottomDrawer>
 
       {rejeitando && (
         <ModalRejeitar
