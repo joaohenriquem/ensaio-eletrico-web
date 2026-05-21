@@ -3,6 +3,7 @@ export interface Usuario {
   username: string
   nome: string
   perfil: string
+  foto_url?: string
 }
 
 export interface UsuarioAdmin {
@@ -12,6 +13,7 @@ export interface UsuarioAdmin {
   username: string
   perfil: string
   status: 'pendente' | 'aprovado' | 'rejeitado'
+  foto_url?: string
   criado_em?: string
 }
 

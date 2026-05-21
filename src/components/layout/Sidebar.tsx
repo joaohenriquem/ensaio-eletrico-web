@@ -1,5 +1,7 @@
 import { NavLink, useNavigate } from 'react-router'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import { uploadImagem } from '../../api/uploads'
+import { atualizarFotoPerfil } from '../../api/auth'
 import {
   LayoutDashboard,
   Users,
@@ -32,6 +34,8 @@ const navAdmin = [
 interface Props {
   nome: string
   perfil: string
+  fotoUrl?: string
+  onFotoChange?: (url: string) => void
   onLogout: () => void
   open: boolean
   onClose: () => void
@@ -39,11 +43,27 @@ interface Props {
   onToggleCollapse: () => void
 }
 
-export default function Sidebar({ nome, perfil, onLogout, open, onClose, collapsed, onToggleCollapse }: Props) {
+export default function Sidebar({ nome, perfil, fotoUrl, onFotoChange, onLogout, open, onClose, collapsed, onToggleCollapse }: Props) {
   const navigate = useNavigate()
   const isAdmin = perfil === 'Administrador' || perfil === 'Admin'
   const nav = isAdmin ? [...navBase, ...navAdmin] : navBase
   const [spinning, setSpinning] = useState(false)
+  const [uploadingFoto, setUploadingFoto] = useState(false)
+  const fotoInputRef = useRef<HTMLInputElement>(null)
+
+  async function handleFotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingFoto(true)
+    try {
+      const url = await uploadImagem(file)
+      await atualizarFotoPerfil(url)
+      onFotoChange?.(url)
+    } catch { /* silencioso */ } finally {
+      setUploadingFoto(false)
+      e.target.value = ''
+    }
+  }
 
   useEffect(() => {
     setSpinning(true)
@@ -107,9 +127,26 @@ export default function Sidebar({ nome, perfil, onLogout, open, onClose, collaps
         </div>
 
         {/* User info — hidden when collapsed on desktop */}
-        <div className={cn('border-b border-white/10 px-5 py-3', collapsed && 'lg:hidden')}>
-          <p className="text-sm font-medium text-white/90">{nome}</p>
-          <p className="text-xs text-white/50">{perfil}</p>
+        <div className={cn('border-b border-white/10 px-5 py-3 flex items-center gap-3', collapsed && 'lg:hidden')}>
+          <label className="relative shrink-0 cursor-pointer" title="Alterar foto">
+            {fotoUrl ? (
+              <img src={fotoUrl} alt={nome} className="h-10 w-10 rounded-full object-cover ring-2 ring-white/20" />
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f0a500] text-sm font-bold text-[#1e3050]">
+                {nome.charAt(0).toUpperCase()}
+              </div>
+            )}
+            {uploadingFoto && (
+              <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              </div>
+            )}
+            <input ref={fotoInputRef} type="file" accept="image/*" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" onChange={handleFotoChange} disabled={uploadingFoto} />
+          </label>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium text-white/90">{nome}</p>
+            <p className="text-xs text-white/50">{perfil}</p>
+          </div>
         </div>
 
         {/* Nav links */}

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle, XCircle, Clock, Users, ShieldCheck, MapPin, History, Pencil } from 'lucide-react'
 import { listarUsuarios, aprovarUsuario, rejeitarUsuario, listarLoginLogs, editarUsuario } from '../api/auth'
+import { uploadImagem } from '../api/uploads'
 import type { UsuarioAdmin } from '../types'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
@@ -68,7 +69,22 @@ function ModalEditar({ usuario, onClose }: { usuario: UsuarioAdmin; onClose: () 
     perfil: usuario.perfil,
     novaSenha: '',
     trocarSenha: false,
+    foto_url: usuario.foto_url ?? '',
   })
+  const [uploadingFoto, setUploadingFoto] = useState(false)
+
+  async function handleFoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingFoto(true)
+    try {
+      const url = await uploadImagem(file)
+      setForm(f => ({ ...f, foto_url: url }))
+    } catch { /* silencioso */ } finally {
+      setUploadingFoto(false)
+      e.target.value = ''
+    }
+  }
   const [erro, setErro] = useState('')
 
   const mut = useMutation({
@@ -79,6 +95,7 @@ function ModalEditar({ usuario, onClose }: { usuario: UsuarioAdmin; onClose: () 
       perfil: form.perfil,
       novaSenha: form.novaSenha || undefined,
       trocar_senha: form.novaSenha ? true : form.trocarSenha,
+      foto_url: form.foto_url || undefined,
     }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['usuarios'] })
@@ -95,6 +112,24 @@ function ModalEditar({ usuario, onClose }: { usuario: UsuarioAdmin; onClose: () 
       <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
         <h2 className="mb-4 text-lg font-semibold text-gray-900">Editar usuário</h2>
         <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-4">
+            <label className="relative cursor-pointer" title="Alterar foto">
+              {form.foto_url ? (
+                <img src={form.foto_url} alt={form.nome} className="h-16 w-16 rounded-full object-cover ring-2 ring-gray-200" />
+              ) : (
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#1e3050] text-xl font-bold text-[#f0a500]">
+                  {form.nome.charAt(0).toUpperCase()}
+                </div>
+              )}
+              {uploadingFoto && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40">
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                </div>
+              )}
+              <input type="file" accept="image/*" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" onChange={handleFoto} disabled={uploadingFoto} />
+            </label>
+            <p className="text-sm text-gray-500">Clique na foto para alterar</p>
+          </div>
           <Input label="Nome" value={form.nome} onChange={(e) => setForm(f => ({ ...f, nome: e.target.value }))} />
           <Input label="E-mail" type="email" value={form.email} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} />
           <Input label="Usuário" value={form.username} onChange={(e) => setForm(f => ({ ...f, username: e.target.value }))} />
@@ -205,9 +240,13 @@ export default function Usuarios() {
               key={u.id}
               className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1e3050] text-sm font-bold text-[#f0a500]">
-                {u.nome.charAt(0).toUpperCase()}
-              </div>
+              {u.foto_url ? (
+                <img src={u.foto_url} alt={u.nome} className="h-10 w-10 shrink-0 rounded-full object-cover ring-2 ring-gray-200" />
+              ) : (
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1e3050] text-sm font-bold text-[#f0a500]">
+                  {u.nome.charAt(0).toUpperCase()}
+                </div>
+              )}
 
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold text-gray-900">{u.nome}</p>

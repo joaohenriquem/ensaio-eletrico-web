@@ -7,9 +7,10 @@ import { useAuth } from '../../hooks/useAuth'
 
 interface Props {
   children: ReactNode
+  onFotoChange?: (url: string) => void
 }
 
-export default function Layout({ children }: Props) {
+export default function Layout({ children, onFotoChange }: Props) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -25,6 +26,8 @@ export default function Layout({ children }: Props) {
       <Sidebar
         nome={user?.nome ?? ''}
         perfil={user?.perfil ?? ''}
+        fotoUrl={user?.foto_url}
+        onFotoChange={onFotoChange}
         onLogout={logout}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}

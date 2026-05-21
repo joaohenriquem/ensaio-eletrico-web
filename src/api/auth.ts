@@ -15,6 +15,10 @@ export async function changePassword(novaSenha: string): Promise<void> {
   await api.post('/auth/change-password', { novaSenha })
 }
 
+export async function atualizarFotoPerfil(foto_url: string): Promise<void> {
+  await api.put('/auth/me/foto', { foto_url })
+}
+
 export interface DadosCadastro {
   nome: string
   email: string

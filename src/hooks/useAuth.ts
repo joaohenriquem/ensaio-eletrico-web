@@ -6,6 +6,7 @@ export interface AuthContextValue {
   token: string | null
   login: (token: string, user: Usuario) => void
   logout: () => void
+  updateUser: (partial: Partial<Usuario>) => void
 }
 
 export const AuthContext = createContext<AuthContextValue>({
@@ -13,6 +14,7 @@ export const AuthContext = createContext<AuthContextValue>({
   token: null,
   login: () => {},
   logout: () => {},
+  updateUser: () => {},
 })
 
 export function useAuth() {
