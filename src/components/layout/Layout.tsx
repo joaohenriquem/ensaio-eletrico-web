@@ -54,7 +54,7 @@ export default function Layout({ children, onFotoChange }: Props) {
           </button>
         </header>
 
-        <main className="p-4 lg:p-6">{children}</main>
+        <main className="p-4 pt-6 lg:p-6 lg:pt-8">{children}</main>
       </div>
     </div>
   )
