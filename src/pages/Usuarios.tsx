@@ -413,7 +413,7 @@ function LoginLogsSection() {
                   </p>
                 )}
                 {!log.endereco && log.latitude && (
-                  <p className="text-xs text-gray-400">{log.latitude?.toFixed(4)}, {log.longitude?.toFixed(4)}</p>
+                  <p className="text-xs text-gray-400">{Number(log.latitude).toFixed(4)}, {Number(log.longitude).toFixed(4)}</p>
                 )}
                 {!log.endereco && !log.latitude && (
                   <p className="text-xs text-gray-400">Localização não disponível</p>
