@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, type FormEvent } from 'react'
+import { useState, useRef, useEffect, useMemo, type FormEvent } from 'react'
+import { Moon } from 'lucide-react'
 import { useNavigate, Link } from 'react-router'
 import { Eye, EyeOff } from 'lucide-react'
 import { login, verifyOtp } from '../api/auth'
@@ -22,6 +23,11 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const geoRef = useRef<{ latitude: number; longitude: number } | null>(null)
+
+  const apiOffline = useMemo(() => {
+    const brtHour = (new Date().getUTCHours() - 3 + 24) % 24
+    return brtHour >= 20 || brtHour < 8
+  }, [])
 
   async function getIpGeo(): Promise<{ latitude: number; longitude: number } | null> {
     try {
@@ -103,6 +109,18 @@ export default function Login() {
         />
         <div className="absolute inset-0 bg-[#1e3050]/60" />
       </div>
+
+      {apiOffline && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-sm px-4 z-10">
+          <div className="flex items-start gap-2.5 rounded-xl bg-amber-500/90 backdrop-blur px-4 py-3 text-white shadow-lg">
+            <Moon size={18} className="mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold">Sistema fora do ar</p>
+              <p className="text-xs opacity-90">A API está offline entre 20h e 8h para economizar recursos. Tente novamente após as 8h.</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-2xl">
         <div className="mb-8 text-center">

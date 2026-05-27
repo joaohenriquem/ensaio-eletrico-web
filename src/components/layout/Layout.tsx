@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import type { ReactNode } from 'react'
-import { Menu, LogOut } from 'lucide-react'
+import { Menu, LogOut, Moon } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import Sidebar from './Sidebar'
 import { useAuth } from '../../hooks/useAuth'
@@ -20,6 +20,11 @@ export default function Layout({ children, onFotoChange }: Props) {
     logout()
     navigate('/login')
   }
+
+  const apiOffline = useMemo(() => {
+    const brtHour = (new Date().getUTCHours() - 3 + 24) % 24
+    return brtHour >= 20 || brtHour < 8
+  }, [])
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -54,6 +59,12 @@ export default function Layout({ children, onFotoChange }: Props) {
           </button>
         </header>
 
+        {apiOffline && (
+          <div className="flex items-center gap-2 bg-amber-50 border-b border-amber-200 px-4 py-2.5 text-amber-800">
+            <Moon size={15} className="shrink-0" />
+            <p className="text-xs font-medium">Sistema em modo econômico — API offline entre 20h e 8h. Algumas funções podem não responder.</p>
+          </div>
+        )}
         <main className="p-4 pt-6 lg:px-6 lg:pb-6 lg:pt-3">{children}</main>
       </div>
     </div>
