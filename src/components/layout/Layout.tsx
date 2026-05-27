@@ -22,8 +22,9 @@ export default function Layout({ children, onFotoChange }: Props) {
   }
 
   const apiOffline = useMemo(() => {
-    const brtHour = (new Date().getUTCHours() - 3 + 24) % 24
-    return brtHour >= 20 || brtHour < 8
+    const now = new Date()
+    const brtMinutes = ((now.getUTCHours() * 60 + now.getUTCMinutes()) - 3 * 60 + 1440) % 1440
+    return brtMinutes >= 22 * 60 + 30 || brtMinutes < 8 * 60 + 30
   }, [])
 
   return (
@@ -62,7 +63,7 @@ export default function Layout({ children, onFotoChange }: Props) {
         {apiOffline && (
           <div className="flex items-center gap-2 bg-amber-50 border-b border-amber-200 px-4 py-2.5 text-amber-800">
             <Moon size={15} className="shrink-0" />
-            <p className="text-xs font-medium">Sistema em modo econômico — API offline entre 20h e 8h. Algumas funções podem não responder.</p>
+            <p className="text-xs font-medium">Sistema em modo econômico — API offline entre 22h30 e 8h30. Algumas funções podem não responder.</p>
           </div>
         )}
         <main className="p-4 pt-6 lg:px-6 lg:pb-6 lg:pt-3">{children}</main>
