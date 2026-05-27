@@ -39,7 +39,7 @@ export interface OrdemServico {
   cliente_id?: string
   cliente_nome: string
   tipo: string
-  status: 'aberta' | 'em_andamento' | 'aprovada' | 'concluida' | 'cancelada'
+  status: 'aberta' | 'em_andamento' | 'aprovada' | 'concluida' | 'reprovada' | 'cancelada'
   data: string
   tecnico?: string
   local?: string

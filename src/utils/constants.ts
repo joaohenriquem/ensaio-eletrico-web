@@ -3,6 +3,7 @@ export const STATUS_OS: Record<string, string> = {
   em_andamento: 'Em Andamento',
   aprovada: 'Aprovada',
   concluida: 'Concluída',
+  reprovada: 'Reprovada',
   cancelada: 'Cancelada',
 }
 
@@ -11,6 +12,7 @@ export const STATUS_OS_COR: Record<string, string> = {
   em_andamento: 'bg-blue-100 text-blue-800',
   aprovada: 'bg-emerald-100 text-emerald-800',
   concluida: 'bg-green-100 text-green-800',
+  reprovada: 'bg-orange-100 text-orange-800',
   cancelada: 'bg-red-100 text-red-800',
 }
 
