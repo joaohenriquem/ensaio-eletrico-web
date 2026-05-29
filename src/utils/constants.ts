@@ -44,7 +44,6 @@ export const TIPOS_OS = [
   'Manutenção Preventiva',
   'Manutenção Corretiva',
   'Instalação Elétrica',
-  'Instalação de Carregadores Veiculares',
   'Troca de Lâmpadas / Fotocélulas',
   'Inspeção Elétrica',
   'Projeto Elétrico',
