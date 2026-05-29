@@ -47,6 +47,7 @@ export interface OrdemServico {
   descricao: string
   observacoes?: string
   obs_status?: string
+  valor?: number
   criado_em?: string
 }
 

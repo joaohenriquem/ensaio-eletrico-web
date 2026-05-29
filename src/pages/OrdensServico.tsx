@@ -37,6 +37,7 @@ function OSForm({ editData, onSuccess, onCancel }: {
     prioridade: (editData?.prioridade ?? 'Normal') as 'Normal' | 'Alta' | 'Urgente',
     descricao: editData?.descricao ?? '',
     observacoes: editData?.observacoes ?? '',
+    valor: editData?.valor ?? '',
   })
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -56,6 +57,7 @@ function OSForm({ editData, onSuccess, onCancel }: {
         tipo: form.tipo === 'Outro' ? `Outro: ${tipoOutro.trim()}` : form.tipo,
         cliente_id: clienteId || undefined,
         cliente_nome: clienteNome,
+        valor: form.valor ? Number(form.valor) : undefined,
       }
       if (isEdit) {
         await atualizar.mutateAsync({ id: editData!._id, data: payload })
@@ -119,6 +121,7 @@ function OSForm({ editData, onSuccess, onCancel }: {
         <Input label="Técnico" value={form.tecnico} onChange={(e) => setForm(f => ({ ...f, tecnico: e.target.value }))} />
       </div>
       <Input label="Local / Endereço" value={form.local} onChange={(e) => setForm(f => ({ ...f, local: e.target.value }))} />
+      <Input label="Valor (R$)" type="number" min={0} step={0.01} placeholder="0,00" value={form.valor} onChange={(e) => setForm(f => ({ ...f, valor: e.target.value }))} />
       <div>
         <label className="mb-1 block text-sm font-medium text-gray-700">Descrição / Escopo *</label>
         <textarea rows={3} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#f0a500] focus:outline-none focus:ring-2 focus:ring-[#f0a500]/20" value={form.descricao} onChange={(e) => setForm(f => ({ ...f, descricao: e.target.value }))} />
