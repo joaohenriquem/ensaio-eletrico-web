@@ -22,6 +22,7 @@ export default function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [lembrar, setLembrar] = useState(false)
   const geoRef = useRef<{ latitude: number; longitude: number } | null>(null)
 
   const apiOffline = useMemo(() => {
@@ -85,8 +86,8 @@ export default function Login() {
     try {
       if (!geoRef.current) geoRef.current = await getIpGeo()
       const geo = geoRef.current
-      const res = await verifyOtp(userId, otp.trim(), geo?.latitude, geo?.longitude)
-      saveAuth(res.token, res.user)
+      const res = await verifyOtp(userId, otp.trim(), geo?.latitude, geo?.longitude, lembrar)
+      saveAuth(res.token, res.user, lembrar)
       navigate(res.trocarSenha ? '/trocar-senha' : '/')
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
@@ -159,6 +160,16 @@ export default function Login() {
                 {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
               </button>
             </div>
+
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={lembrar}
+                onChange={(e) => setLembrar(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 accent-[#f0a500]"
+              />
+              <span className="text-sm text-gray-500">Manter conectado por 7 dias</span>
+            </label>
 
             {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 

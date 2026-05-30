@@ -6,8 +6,13 @@ export async function login(username: string, password: string): Promise<MfaResp
   return data
 }
 
-export async function verifyOtp(userId: string, otp: string, latitude?: number, longitude?: number): Promise<LoginResponse & { trocarSenha?: boolean }> {
-  const { data } = await api.post<LoginResponse & { trocarSenha?: boolean }>('/auth/verify-otp', { userId, otp, latitude, longitude })
+export async function verifyOtp(userId: string, otp: string, latitude?: number, longitude?: number, lembrar?: boolean): Promise<LoginResponse & { trocarSenha?: boolean }> {
+  const { data } = await api.post<LoginResponse & { trocarSenha?: boolean }>('/auth/verify-otp', { userId, otp, latitude, longitude, lembrar })
+  return data
+}
+
+export async function refreshToken(): Promise<{ token: string }> {
+  const { data } = await api.post<{ token: string }>('/auth/refresh')
   return data
 }
 

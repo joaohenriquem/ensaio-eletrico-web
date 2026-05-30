@@ -4,7 +4,7 @@ import type { Usuario } from '../types'
 export interface AuthContextValue {
   user: Usuario | null
   token: string | null
-  login: (token: string, user: Usuario) => void
+  login: (token: string, user: Usuario, lembrar?: boolean) => void
   logout: () => void
   updateUser: (partial: Partial<Usuario>) => void
 }

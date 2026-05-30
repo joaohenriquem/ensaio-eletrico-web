@@ -1,8 +1,8 @@
-import { useState, useEffect, type ReactNode } from 'react'
+import { useState, useEffect, useRef, type ReactNode } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthContext, type AuthContextValue } from './hooks/useAuth'
-import { buscarMeuPerfil } from './api/auth'
+import { buscarMeuPerfil, refreshToken } from './api/auth'
 import { useAuth } from './hooks/useAuth'
 import type { Usuario } from './types'
 import Layout from './components/layout/Layout'
@@ -33,10 +33,13 @@ function AuthProvider({ children }: { children: ReactNode }) {
     }
   })
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'))
+  const refreshedRef = useRef(false)
 
-  const authLogin = (t: string, u: Usuario) => {
+  const authLogin = (t: string, u: Usuario, lembrar?: boolean) => {
     localStorage.setItem('token', t)
     localStorage.setItem('user', JSON.stringify(u))
+    if (lembrar) localStorage.setItem('lembrar', '1')
+    else localStorage.removeItem('lembrar')
     setToken(t)
     setUser(u)
   }
@@ -44,6 +47,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
+    localStorage.removeItem('lembrar')
     setToken(null)
     setUser(null)
     queryClient.clear()
@@ -56,6 +60,20 @@ function AuthProvider({ children }: { children: ReactNode }) {
       setUser(updated)
     }
   }
+
+  // Renova o token na inicialização se "manter conectado" estiver ativo
+  useEffect(() => {
+    const currentToken = localStorage.getItem('token')
+    if (!currentToken || refreshedRef.current) return
+    if (localStorage.getItem('lembrar') !== '1') return
+    refreshedRef.current = true
+    refreshToken()
+      .then((res) => {
+        localStorage.setItem('token', res.token)
+        setToken(res.token)
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (!token) return

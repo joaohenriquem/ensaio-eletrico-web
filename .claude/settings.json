@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash C:/github/ensaio-eletrico-web/.claude/pre-push-check.sh",
+            "timeout": 120,
+            "statusMessage": "Verificando build antes do push..."
+          }
+        ]
+      }
+    ]
+  }
+}
