@@ -123,8 +123,8 @@ function OSForm({ editData, onSuccess, onCancel }: {
       <Input label="Local / Endereço" value={form.local} onChange={(e) => setForm(f => ({ ...f, local: e.target.value }))} />
       <Input label="Valor (R$)" type="number" min={0} step={0.01} placeholder="0,00" value={form.valor} onChange={(e) => setForm(f => ({ ...f, valor: e.target.value }))} />
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">Descrição / Escopo *</label>
-        <textarea rows={3} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#f0a500] focus:outline-none focus:ring-2 focus:ring-[#f0a500]/20" value={form.descricao} onChange={(e) => setForm(f => ({ ...f, descricao: e.target.value }))} />
+        <label htmlFor="os-descricao" className="mb-1 block text-sm font-medium text-gray-700">Descrição / Escopo *</label>
+        <textarea id="os-descricao" rows={3} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#f0a500] focus:outline-none focus:ring-2 focus:ring-[#f0a500]/20" value={form.descricao} onChange={(e) => setForm(f => ({ ...f, descricao: e.target.value }))} />
       </div>
       <div>
         <label className="mb-1 block text-sm font-medium text-gray-700">Observações Internas</label>

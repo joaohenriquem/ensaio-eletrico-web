@@ -49,6 +49,8 @@ function ClienteForm({ inicial, onSave, onCancel }: {
     setError('')
     try {
       await onSave(form)
+    } catch {
+      setError('Não foi possível salvar. Verifique sua conexão e tente novamente.')
     } finally {
       setSaving(false)
     }

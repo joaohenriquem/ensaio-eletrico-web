@@ -29,9 +29,10 @@ test.describe('Autenticação', () => {
   })
 
   test('mostra passo de OTP após credenciais válidas', async ({ page }) => {
+    test.skip(!process.env.TEST_USER || !process.env.TEST_PASS, 'Requer TEST_USER e TEST_PASS com credenciais reais do sistema')
     await page.goto('/login')
-    await page.getByLabel('Usuário').fill(process.env.TEST_USER ?? 'admin')
-    await page.getByLabel('Senha').fill(process.env.TEST_PASS ?? 'admin123')
+    await page.getByLabel('Usuário').fill(process.env.TEST_USER!)
+    await page.getByLabel('Senha').fill(process.env.TEST_PASS!)
     await page.getByRole('button', { name: 'Continuar' }).click()
     await expect(page.getByText(/código/i)).toBeVisible({ timeout: 10000 })
   })

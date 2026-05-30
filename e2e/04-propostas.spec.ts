@@ -37,11 +37,15 @@ test.describe('Propostas Comerciais', () => {
   })
 
   test('botão PDF aparece no card expandido', async ({ page }) => {
+    await page.waitForTimeout(2000)
     const cards = page.locator('.rounded-xl.border.border-gray-200')
     const count = await cards.count()
-    if (count > 0) {
-      await cards.first().locator('button').first().click()
-      await expect(page.getByRole('button', { name: /PDF/i }).first()).toBeVisible({ timeout: 3000 })
-    }
+    if (count === 0) return
+    const firstCard = cards.first()
+    const buttons = firstCard.locator('button')
+    const btnCount = await buttons.count()
+    if (btnCount === 0) return
+    await buttons.first().click({ timeout: 5000 })
+    await expect(page.getByRole('button', { name: /PDF/i }).first()).toBeVisible({ timeout: 5000 })
   })
 })

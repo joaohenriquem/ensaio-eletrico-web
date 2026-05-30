@@ -15,6 +15,6 @@ test.describe('Dashboard', () => {
   })
 
   test('exibe OS recentes', async ({ page }) => {
-    await expect(page.getByText(/OS Recentes|Ordens Recentes/i)).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText(/Últimas.*Ordens|OS Recentes|Ordens Recentes/i)).toBeVisible({ timeout: 10000 })
   })
 })

@@ -15,17 +15,16 @@ export default function Dashboard() {
   const { data, isLoading } = useDashboard()
 
   if (isLoading) return <p className="text-sm text-gray-400">Carregando dashboard...</p>
-  if (!data) return null
 
-  const osData = Object.entries(data.distribuicaoOs).map(([status, count]) => ({
+  const osData = data ? Object.entries(data.distribuicaoOs).map(([status, count]) => ({
     name: STATUS_OS[status] ?? status,
     value: count,
-  }))
+  })) : []
 
-  const propostaData = Object.entries(data.distribuicaoPropostas).map(([status, count]) => ({
+  const propostaData = data ? Object.entries(data.distribuicaoPropostas).map(([status, count]) => ({
     name: STATUS_PROPOSTA[status] ?? status,
     value: count,
-  }))
+  })) : []
 
   return (
     <div className="flex flex-col gap-6">
@@ -33,13 +32,13 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
         {[
-          { label: 'Clientes Ativos', v: data.clientesAtivos },
-          { label: 'OS Abertas', v: data.osAbertas },
-          { label: 'OS Concluídas', v: data.osConcluidas },
-          { label: 'Total Relatórios', v: data.totalRelatorios },
-          { label: 'Total Propostas', v: data.totalPropostas },
-          { label: 'Propostas Aprovadas', v: data.propostasAprovadas },
-          { label: 'Receita Aprovada', v: formatarMoeda(data.receitaAprovada) },
+          { label: 'Clientes Ativos', v: data?.clientesAtivos ?? '—' },
+          { label: 'OS Abertas', v: data?.osAbertas ?? '—' },
+          { label: 'OS Concluídas', v: data?.osConcluidas ?? '—' },
+          { label: 'Total Relatórios', v: data?.totalRelatorios ?? '—' },
+          { label: 'Total Propostas', v: data?.totalPropostas ?? '—' },
+          { label: 'Propostas Aprovadas', v: data?.propostasAprovadas ?? '—' },
+          { label: 'Receita Aprovada', v: data ? formatarMoeda(data.receitaAprovada) : '—' },
         ].map(({ label, v }) => (
           <div key={label} className="rounded-xl border-l-4 border-[#f0a500] bg-white p-4 shadow-sm">
             <p className="text-xs text-gray-500">{label}</p>
@@ -89,7 +88,7 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {data.osRecentes.map((os) => (
+              {(data?.osRecentes ?? []).map((os) => (
                 <tr key={os._id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-2 pr-4 font-mono text-xs">{os.numero}</td>
                   <td className="py-2 pr-4">{os.cliente_nome}</td>
