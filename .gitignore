@@ -28,3 +28,14 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+
+# Selenium (compilação TS — ignora JS mas mantém package.json)
+/selenium/dist/**/*.js
+/selenium/dist/**/*.d.ts

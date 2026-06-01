@@ -1,0 +1,6 @@
+{
+  "timeout": 30000,
+  "spec": "selenium/dist/jornadas/*.test.js",
+  "exit": true,
+  "slow": 5000
+}
