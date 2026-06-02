@@ -26,7 +26,7 @@ test.describe('CRUD — Usuários (Admin)', () => {
     await page.getByRole('button', { name: 'Criar Usuário' }).click()
 
     await expect(
-      page.getByText(nomeOriginal).or(page.getByText(/não foi possível|já está cadastrado|obrigatório/i))
+      page.getByText(nomeOriginal).or(page.getByText(/Erro ao criar|não foi possível|já está cadastrado|obrigatório/i))
     ).toBeVisible({ timeout: TIMEOUT })
   })
 

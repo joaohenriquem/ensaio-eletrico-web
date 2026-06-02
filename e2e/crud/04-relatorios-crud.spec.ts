@@ -9,7 +9,7 @@ test.describe('CRUD — Relatórios de Manutenção', () => {
   test.beforeEach(async ({ page }) => {
     await loginViaStorage(page)
     await page.goto('/relatorios')
-    await page.getByRole('heading', { name: /Relatório/ }).waitFor({ timeout: TIMEOUT })
+    await page.getByRole('heading', { name: 'Relatórios de Manutenção', exact: true }).waitFor({ timeout: TIMEOUT })
   })
 
   test('CREATE — cria novo relatório', async ({ page }) => {
@@ -29,7 +29,7 @@ test.describe('CRUD — Relatórios de Manutenção', () => {
     await page.getByRole('button', { name: /Finalizar/ }).click()
 
     await expect(
-      page.getByText(cliente).or(page.getByText(/obrigatório|não foi possível/i))
+      page.getByText(cliente).or(page.getByText(/possível salvar|obrigatório/i))
     ).toBeVisible({ timeout: TIMEOUT })
   })
 

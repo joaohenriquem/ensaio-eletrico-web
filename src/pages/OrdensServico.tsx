@@ -68,6 +68,8 @@ function OSForm({ editData, onSuccess, onCancel }: {
         }
       }
       onSuccess()
+    } catch {
+      setError('Não foi possível salvar. Verifique sua conexão e tente novamente.')
     } finally {
       setSaving(false)
     }

@@ -196,13 +196,17 @@ function RelatorioForm({ editData, onSuccess, onCancel }: {
       nome_contratado: nomeContratado || undefined,
       status,
     }
-    if (isEdit) {
-      await atualizar.mutateAsync({ id: editData!._id, data: payload })
-      onSuccess()
-    } else {
-      const res = await criar.mutateAsync(payload)
-      setSavedId(res.id)
-      if (status === 'finalizado') onSuccess()
+    try {
+      if (isEdit) {
+        await atualizar.mutateAsync({ id: editData!._id, data: payload })
+        onSuccess()
+      } else {
+        const res = await criar.mutateAsync(payload)
+        setSavedId(res.id)
+        if (status === 'finalizado') onSuccess()
+      }
+    } catch {
+      setError('Não foi possível salvar. Verifique sua conexão e tente novamente.')
     }
   }
 

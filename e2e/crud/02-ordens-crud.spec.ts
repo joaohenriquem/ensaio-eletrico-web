@@ -26,7 +26,7 @@ test.describe('CRUD — Ordens de Serviço', () => {
     await page.getByRole('button', { name: /Criar OS|Criar e Enviar/ }).click()
 
     await expect(
-      page.getByText(cliente).or(page.getByText(/obrigatório|não foi possível/i))
+      page.getByText(cliente).or(page.getByText(/possível salvar|obrigatório/i))
     ).toBeVisible({ timeout: TIMEOUT })
   })
 

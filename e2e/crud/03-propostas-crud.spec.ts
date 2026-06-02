@@ -16,8 +16,9 @@ test.describe('CRUD — Propostas Comerciais', () => {
     await page.locator('button[title="Nova Proposta"]').click()
     await page.getByText('Nova Proposta').first().waitFor({ timeout: 8000 })
 
-    // Seleciona "Digitar manualmente" e preenche o cliente
-    await page.locator('select').first().selectOption('__manual__')
+    // Aguarda o select carregar as opções e seleciona "Digitar manualmente"
+    await page.locator('select').first().waitFor({ state: 'visible' })
+    await page.locator('select').first().selectOption({ label: '– Digitar manualmente –' })
     await page.getByLabel('Ou digite o cliente').fill(cliente)
     await page.getByLabel('Data').fill(hoje)
     await page.getByLabel('Descrição da Proposta *').fill(descricaoOriginal)
@@ -25,7 +26,7 @@ test.describe('CRUD — Propostas Comerciais', () => {
     await page.getByRole('button', { name: /Enviar/ }).click()
 
     await expect(
-      page.getByText(cliente).or(page.getByText(/obrigatório|não foi possível/i))
+      page.getByText(cliente).or(page.getByText(/possível salvar|obrigatório/i))
     ).toBeVisible({ timeout: TIMEOUT })
   })
 
