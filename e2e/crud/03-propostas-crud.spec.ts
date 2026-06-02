@@ -16,9 +16,7 @@ test.describe('CRUD — Propostas Comerciais', () => {
     await page.locator('button[title="Nova Proposta"]').click()
     await page.getByText('Nova Proposta').first().waitFor({ timeout: 8000 })
 
-    // Aguarda o select carregar as opções e seleciona "Digitar manualmente"
-    await page.locator('select').first().waitFor({ state: 'visible' })
-    await page.locator('select').first().selectOption({ label: '– Digitar manualmente –' })
+    // Campo de cliente manual já aparece por padrão quando nenhum cliente está selecionado
     await page.getByLabel('Ou digite o cliente').fill(cliente)
     await page.getByLabel('Data').fill(hoje)
     await page.getByLabel('Descrição da Proposta *').fill(descricaoOriginal)
