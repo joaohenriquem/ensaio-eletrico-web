@@ -10,6 +10,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
+    "test:crud": "playwright test e2e/crud/ --reporter=list",
     "test:selenium": "tsc -p selenium/tsconfig.json && npx mocha --config selenium/.mocharc.json",
     "test:selenium:visible": "cross-env HEADLESS=false npm run test:selenium"
   },
