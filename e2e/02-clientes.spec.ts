@@ -56,4 +56,19 @@ test.describe('Clientes', () => {
       expect(href).toContain('wa.me/55')
     }
   })
+
+  test.afterAll(async ({ request }) => {
+    if (!TOKEN) return
+    const headers = { Authorization: `Bearer ${TOKEN}` }
+    try {
+      const res = await request.get('/api/clientes', { headers })
+      if (!res.ok()) return
+      const lista = await res.json() as Record<string, unknown>[]
+      for (const item of lista) {
+        if (String(item['nome'] ?? '').startsWith('Teste E2E')) {
+          await request.delete(`/api/clientes/${item._id}`, { headers }).catch(() => {})
+        }
+      }
+    } catch { /* API offline — ignora */ }
+  })
 })

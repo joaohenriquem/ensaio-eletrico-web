@@ -2,13 +2,16 @@ import { describe, it, before, after, beforeEach } from 'mocha'
 import { expect } from 'chai'
 import { WebDriver } from 'selenium-webdriver'
 import { criarDriver, encerrarDriver, aguardar, findByLabel, BASE_URL, By, TIMEOUT } from '../helpers/driver'
-import { loginViaStorage } from '../helpers/auth'
+import { loginViaStorage, limparRegistrosTeste } from '../helpers/auth'
 
 describe('Jornada: Gestão de Clientes', function () {
   let driver: WebDriver
 
   before(async () => { driver = await criarDriver() })
-  after(async () => { await encerrarDriver(driver) })
+  after(async () => {
+    await encerrarDriver(driver)
+    await limparRegistrosTeste('clientes', 'nome', 'Selenium E2E')
+  })
   beforeEach(async () => {
     await loginViaStorage(driver)
     await driver.get(`${BASE_URL}/clientes`)

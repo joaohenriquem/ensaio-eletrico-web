@@ -1,5 +1,8 @@
 import { WebDriver } from 'selenium-webdriver'
+import axios from 'axios'
 import { BASE_URL } from './driver'
+
+const API_URL = process.env.API_URL ?? 'http://localhost:3001'
 
 export const TOKEN = process.env.TEST_TOKEN ?? ''
 export const USER_JSON = process.env.TEST_USER_JSON
@@ -27,4 +30,22 @@ export async function logout(driver: WebDriver): Promise<void> {
     localStorage.removeItem('user');
     localStorage.removeItem('lembrar');
   `)
+}
+
+/** Remove registros de teste cujo campo começa com o prefixo dado. */
+export async function limparRegistrosTeste(
+  rota: string,
+  campo: string,
+  prefixo: string,
+): Promise<void> {
+  if (!TOKEN) return
+  const headers = { Authorization: `Bearer ${TOKEN}` }
+  try {
+    const res = await axios.get<Record<string, unknown>[]>(`${API_URL}/api/${rota}`, { headers })
+    for (const item of res.data) {
+      if (String(item[campo] ?? '').startsWith(prefixo)) {
+        await axios.delete(`${API_URL}/api/${rota}/${item._id}`, { headers }).catch(() => {})
+      }
+    }
+  } catch { /* API offline — ignora */ }
 }

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { loginViaStorage, expandirCard, clicarEditar, confirmarExclusao, TIMEOUT, hoje } from './helpers'
+import { loginViaStorage, expandirCard, clicarEditar, confirmarExclusao, limparRegistrosTeste, TIMEOUT, hoje } from './helpers'
 
 test.describe('CRUD — Ordens de Serviço', () => {
   const cliente = `CRUD-OS-${Date.now()}`
@@ -64,5 +64,9 @@ test.describe('CRUD — Ordens de Serviço', () => {
     await confirmarExclusao(page, card)
 
     await expect(page.getByText(cliente)).not.toBeVisible({ timeout: TIMEOUT })
+  })
+
+  test.afterAll(async ({ request }) => {
+    await limparRegistrosTeste(request, 'ordens', 'cliente_nome', 'CRUD-OS-')
   })
 })

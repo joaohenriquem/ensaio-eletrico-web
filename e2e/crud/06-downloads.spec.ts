@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import * as fs from 'fs'
-import { loginViaStorage, TIMEOUT } from './helpers'
+import { loginViaStorage, limparRegistrosTeste, TIMEOUT } from './helpers'
 
 /**
  * Testa o download de PDF de relatórios e propostas.
@@ -137,6 +137,10 @@ test.describe('Download PDF — Relatórios', () => {
     expect(download.suggestedFilename()).toMatch(/REL-\d{4}-\d+\.pdf/i)
     const path = await download.path()
     verificarPdf(path!)
+  })
+
+  test.afterAll(async ({ request }) => {
+    await limparRegistrosTeste(request, 'relatorios', 'cliente_nome', 'PDF-Test-')
   })
 })
 

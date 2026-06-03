@@ -255,7 +255,11 @@ export default function Clientes() {
         <div>
           <h1 className="text-xl font-bold text-[#1e3050]">Clientes</h1>
           {!isLoading && (
-            <p className="text-xs text-gray-400">{data.length} cadastrado{data.length !== 1 ? 's' : ''}</p>
+            <p className="text-xs text-gray-400">
+              {busca
+                ? `${filtrados.length} de ${data.length} cadastrado${data.length !== 1 ? 's' : ''}`
+                : `${data.length} cadastrado${data.length !== 1 ? 's' : ''}`}
+            </p>
           )}
         </div>
       </div>

@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test'
+import type { Page, APIRequestContext } from '@playwright/test'
 
 const TOKEN = process.env.TEST_TOKEN ?? ''
 const USER = JSON.parse(process.env.TEST_USER_JSON ?? '{"id":"1","username":"admin","nome":"Admin","perfil":"Administrador"}')
@@ -34,3 +34,25 @@ export async function confirmarExclusao(page: Page, card: ReturnType<typeof page
 
 export const TIMEOUT = 15_000
 export const hoje = new Date().toISOString().slice(0, 10)
+
+/** Remove todos os registros de teste cujo campo começa com o prefixo dado. */
+export async function limparRegistrosTeste(
+  request: APIRequestContext,
+  rota: string,
+  campo: string,
+  prefixo: string,
+) {
+  const token = process.env.TEST_TOKEN ?? ''
+  if (!token) return
+  const headers = { Authorization: `Bearer ${token}` }
+  try {
+    const res = await request.get(`/api/${rota}`, { headers })
+    if (!res.ok()) return
+    const lista = await res.json() as Record<string, unknown>[]
+    for (const item of lista) {
+      if (String(item[campo] ?? '').startsWith(prefixo)) {
+        await request.delete(`/api/${rota}/${item._id}`, { headers }).catch(() => {})
+      }
+    }
+  } catch { /* API offline — ignora */ }
+}
