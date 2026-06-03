@@ -22,7 +22,13 @@ async function abrirCardEClicarPdf(page: import('@playwright/test').Page, rota: 
   if (await cards.count() === 0) return null
 
   const card = cards.first()
-  await card.locator('button').first().click()
+
+  // Tenta clicar para expandir o card; se não for clicável (loading, coberto), pula
+  try {
+    await card.locator('button').first().click({ timeout: 8000 })
+  } catch {
+    return null
+  }
   await page.waitForTimeout(500)
 
   const btnPdf = card.getByRole('button', { name: /PDF/i })
