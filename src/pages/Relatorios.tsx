@@ -439,7 +439,7 @@ export default function Relatorios() {
       </button>
 
       <BottomDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title={editRel ? 'Editar Relatório' : 'Novo Relatório'}>
-        <RelatorioForm editData={editRel} onSuccess={() => setDrawerOpen(false)} onCancel={() => setDrawerOpen(false)} />
+        <RelatorioForm key={editRel?._id ?? 'new'} editData={editRel} onSuccess={() => setDrawerOpen(false)} onCancel={() => setDrawerOpen(false)} />
       </BottomDrawer>
 
       {excluirId && (

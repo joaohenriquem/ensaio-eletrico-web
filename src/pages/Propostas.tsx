@@ -406,7 +406,7 @@ export default function Propostas() {
       </button>
 
       <BottomDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title={editProp ? 'Editar Proposta' : 'Nova Proposta'}>
-        <PropostaForm editData={editProp} onSuccess={() => setDrawerOpen(false)} onCancel={() => setDrawerOpen(false)} />
+        <PropostaForm key={editProp?._id ?? 'new'} editData={editProp} onSuccess={() => setDrawerOpen(false)} onCancel={() => setDrawerOpen(false)} />
       </BottomDrawer>
 
       <StatusPropostaDrawer proposta={statusProp} open={statusDrawerOpen} onClose={() => setStatusDrawerOpen(false)} />

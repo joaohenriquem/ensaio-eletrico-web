@@ -383,7 +383,7 @@ export default function OrdensServico() {
       </button>
 
       <BottomDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title={editOS ? 'Editar OS' : 'Nova OS'}>
-        <OSForm editData={editOS} onSuccess={() => setDrawerOpen(false)} onCancel={() => setDrawerOpen(false)} />
+        <OSForm key={editOS?._id ?? 'new'} editData={editOS} onSuccess={() => setDrawerOpen(false)} onCancel={() => setDrawerOpen(false)} />
       </BottomDrawer>
 
       <StatusDrawer os={statusOS} open={statusDrawerOpen} onClose={() => setStatusDrawerOpen(false)} />

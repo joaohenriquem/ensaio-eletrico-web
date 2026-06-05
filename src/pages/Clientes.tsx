@@ -309,6 +309,7 @@ export default function Clientes() {
         title={editCliente ? 'Editar Cliente' : 'Novo Cliente'}
       >
         <ClienteForm
+          key={editCliente?._id ?? 'new'}
           inicial={editCliente}
           onSave={salvar}
           onCancel={() => setDrawerOpen(false)}
