@@ -367,7 +367,7 @@ function LoginLogsSection() {
   const [mapaLog, setMapaLog] = useState<typeof logs[0] | null>(null)
 
   function formatData(iso: string) {
-    return new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+    return new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short' })
   }
 
   return (
