@@ -18,6 +18,8 @@ import Clientes from './pages/Clientes'
 import OrdensServico from './pages/OrdensServico'
 import Relatorios from './pages/Relatorios'
 import Propostas from './pages/Propostas'
+import Contratos from './pages/Contratos'
+import AssinarContrato from './pages/AssinarContrato'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -105,6 +107,7 @@ export default function App() {
             <Route path="/esqueci-senha" element={<EsqueciSenha />} />
             <Route path="/redefinir-senha" element={<RedefinirSenha />} />
             <Route path="/trocar-senha" element={<TrocarSenha />} />
+            <Route path="/assinar-contrato/:id" element={<AssinarContrato />} />
             <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
             <Route path="/usuarios" element={<PrivateRoute><Usuarios /></PrivateRoute>} />
             <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
@@ -112,6 +115,7 @@ export default function App() {
             <Route path="/ordens" element={<PrivateRoute><OrdensServico /></PrivateRoute>} />
             <Route path="/relatorios" element={<PrivateRoute><Relatorios /></PrivateRoute>} />
             <Route path="/propostas" element={<PrivateRoute><Propostas /></PrivateRoute>} />
+            <Route path="/contratos" element={<PrivateRoute><Contratos /></PrivateRoute>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

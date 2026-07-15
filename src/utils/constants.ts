@@ -30,6 +30,18 @@ export const STATUS_PROPOSTA_COR: Record<string, string> = {
   rejeitado: 'bg-red-100 text-red-800',
 }
 
+export const STATUS_CONTRATO: Record<string, string> = {
+  rascunho: 'Rascunho',
+  aguardando_assinatura: 'Aguardando Assinatura',
+  assinado: 'Assinado',
+}
+
+export const STATUS_CONTRATO_COR: Record<string, string> = {
+  rascunho: 'bg-gray-100 text-gray-700',
+  aguardando_assinatura: 'bg-blue-100 text-blue-800',
+  assinado: 'bg-green-100 text-green-800',
+}
+
 export const STATUS_RELATORIO: Record<string, string> = {
   rascunho: 'Rascunho',
   finalizado: 'Finalizado',

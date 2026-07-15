@@ -8,6 +8,7 @@ import {
   ClipboardList,
   Wrench,
   FileText,
+  FileSignature,
   Zap,
   LogOut,
   X,
@@ -24,6 +25,7 @@ const navBase = [
   { to: '/clientes', label: 'Clientes', icon: Users, exact: false },
   { to: '/ordens', label: 'Ordens de Serviço', icon: ClipboardList, exact: false },
   { to: '/propostas', label: 'Propostas Comerciais', icon: FileText, exact: false },
+  { to: '/contratos', label: 'Contratos', icon: FileSignature, exact: false },
   { to: '/relatorios', label: 'Relatórios de Manutenção', icon: Wrench, exact: false },
 ]
 

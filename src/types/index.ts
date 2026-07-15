@@ -135,6 +135,69 @@ export interface Proposta {
   criado_em?: string
 }
 
+export interface Contrato {
+  _id: string
+  numero: string
+  cliente_id?: string
+  cliente_nome: string
+  cliente_endereco?: string
+  data: string
+  qtd_paineis?: number
+  locais_paineis?: string
+  periodicidade?: string
+  qtd_manutencoes?: number
+  valor_total?: number
+  forma_pagamento?: string
+  vigencia_meses?: number
+  data_inicio?: string
+  data_fim?: string
+  taxa_visita?: number
+  cronograma_tempo?: string
+  cronograma_horario?: string
+  responsavel_tecnico?: string
+  cft?: string
+  guid?: string
+  assinatura_contratada?: string
+  nome_contratada?: string
+  assinado_contratada_em?: string
+  assinatura_contratante?: string
+  nome_contratante?: string
+  assinado_contratante_em?: string
+  status: 'rascunho' | 'aguardando_assinatura' | 'assinado'
+  criado_em?: string
+}
+
+export interface ContratoPublico {
+  _id: string
+  numero: string
+  cliente_nome: string
+  cliente_endereco?: string
+  data: string
+  qtd_paineis?: number
+  locais_paineis?: string
+  periodicidade?: string
+  qtd_manutencoes?: number
+  valor_total?: number
+  forma_pagamento?: string
+  vigencia_meses?: number
+  data_inicio?: string
+  data_fim?: string
+  taxa_visita?: number
+  cronograma_tempo?: string
+  cronograma_horario?: string
+  responsavel_tecnico?: string
+  cft?: string
+  guid?: string
+  assinatura_contratada?: string
+  nome_contratada?: string
+  assinado_contratada_em?: string
+  assinatura_contratante?: string
+  nome_contratante?: string
+  assinado_contratante_em?: string
+  assinado: boolean
+  assinado_em?: string
+}
+
 export interface DashboardStats {
   clientesAtivos: number
   osAbertas: number
