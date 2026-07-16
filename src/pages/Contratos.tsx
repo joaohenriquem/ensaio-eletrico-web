@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Plus, Trash2, Download, FileSignature, ChevronDown, MapPin, Link2, Mail, Check, PenLine, ScrollText } from 'lucide-react'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import BottomDrawer from '../components/ui/BottomDrawer'
@@ -51,6 +51,17 @@ function ContratoForm({ editData, onSuccess, onCancel }: {
   const [error, setError] = useState('')
   const [savedId, setSavedId] = useState<string | null>(null)
   const [savedNumero, setSavedNumero] = useState<string>('')
+  const geoRef = useRef<{ latitude: number; longitude: number } | null>(null)
+
+  useEffect(() => {
+    if (editData?.assinatura_contratada) return // já assinado, não precisa capturar de novo
+    if (!navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { geoRef.current = { latitude: pos.coords.latitude, longitude: pos.coords.longitude } },
+      () => { /* usuário negou ou timeout — segue sem localização */ },
+      { timeout: 8000, maximumAge: 60000 }
+    )
+  }, [editData?.assinatura_contratada])
 
   const clienteSelecionado = clientes.find(c => c._id === clienteId)
   const clienteNome = clienteId ? (clienteSelecionado?.nome ?? '') : clienteManual
@@ -83,6 +94,8 @@ function ContratoForm({ editData, onSuccess, onCancel }: {
       cft: form.cft,
       assinatura_contratada: assinaturaContratada || undefined,
       nome_contratada: nomeContratada || undefined,
+      latitude_contratada: geoRef.current?.latitude,
+      longitude_contratada: geoRef.current?.longitude,
       status: status ?? editData?.status ?? 'rascunho',
     }
     try {
@@ -221,13 +234,38 @@ function EnviarLinkDrawer({ contrato, open, onClose }: { contrato: Contrato | nu
   async function copiarLink() {
     if (!contrato) return
     setErro('')
+
+    let link: string
     try {
-      const link = await gerarLinkAssinatura(contrato._id)
+      link = await gerarLinkAssinatura(contrato._id)
+    } catch (err) {
+      console.error('Erro ao gerar link de assinatura:', err)
+      setErro('Não foi possível gerar o link.')
+      return
+    }
+
+    try {
       await navigator.clipboard.writeText(link)
       setLinkCopiado(true)
       setTimeout(() => setLinkCopiado(false), 3000)
-    } catch {
-      setErro('Não foi possível gerar o link.')
+    } catch (err) {
+      console.error('Erro ao copiar link para a área de transferência:', err)
+      // fallback para quando a Clipboard API falha (ex.: documento sem foco)
+      const textarea = document.createElement('textarea')
+      textarea.value = link
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      try {
+        document.execCommand('copy')
+        setLinkCopiado(true)
+        setTimeout(() => setLinkCopiado(false), 3000)
+      } catch {
+        setErro(`Não foi possível copiar automaticamente. Link: ${link}`)
+      } finally {
+        document.body.removeChild(textarea)
+      }
     }
   }
 

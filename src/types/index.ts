@@ -160,9 +160,15 @@ export interface Contrato {
   assinatura_contratada?: string
   nome_contratada?: string
   assinado_contratada_em?: string
+  latitude_contratada?: number
+  longitude_contratada?: number
+  endereco_contratada?: string
   assinatura_contratante?: string
   nome_contratante?: string
   assinado_contratante_em?: string
+  latitude_contratante?: number
+  longitude_contratante?: number
+  endereco_contratante?: string
   status: 'rascunho' | 'aguardando_assinatura' | 'assinado'
   criado_em?: string
 }
@@ -191,9 +197,11 @@ export interface ContratoPublico {
   assinatura_contratada?: string
   nome_contratada?: string
   assinado_contratada_em?: string
+  endereco_contratada?: string
   assinatura_contratante?: string
   nome_contratante?: string
   assinado_contratante_em?: string
+  endereco_contratante?: string
   assinado: boolean
   assinado_em?: string
 }

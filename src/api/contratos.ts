@@ -58,8 +58,15 @@ export async function buscarContratoPublico(id: string, token: string): Promise<
   return data
 }
 
-export async function assinarContratoPublico(id: string, token: string, nome: string, assinatura: string): Promise<void> {
-  await publicApi.post(`/contratos/${id}/assinar`, { nome, assinatura }, { params: { token } })
+export async function assinarContratoPublico(
+  id: string,
+  token: string,
+  nome: string,
+  assinatura: string,
+  latitude?: number,
+  longitude?: number
+): Promise<void> {
+  await publicApi.post(`/contratos/${id}/assinar`, { nome, assinatura, latitude, longitude }, { params: { token } })
 }
 
 export async function baixarPdfContratoPublico(id: string, token: string, numero: string): Promise<void> {

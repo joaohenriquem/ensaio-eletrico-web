@@ -26,9 +26,11 @@ export interface DadosContrato {
   assinatura_contratada?: string
   nome_contratada?: string
   assinado_contratada_em?: string
+  endereco_contratada?: string
   assinatura_contratante?: string
   nome_contratante?: string
   assinado_contratante_em?: string
+  endereco_contratante?: string
 }
 
 // Padrão visual do modelo: títulos de seção em azul
@@ -41,11 +43,12 @@ function Secao({ titulo, children }: { titulo: string; children: React.ReactNode
   )
 }
 
-export function BlocoAssinatura({ assinatura, papel, nome, assinadoEm, fallback }: {
+export function BlocoAssinatura({ assinatura, papel, nome, assinadoEm, localizacao, fallback }: {
   assinatura?: string
   papel: string
   nome?: string
   assinadoEm?: string
+  localizacao?: string
   fallback: string
 }) {
   return (
@@ -64,6 +67,7 @@ export function BlocoAssinatura({ assinatura, papel, nome, assinadoEm, fallback 
       {assinadoEm && (
         <p className="text-[10px] text-gray-400 text-center">
           Assinado digitalmente em {new Date(assinadoEm).toLocaleString('pt-BR')}
+          {localizacao ? ` — ${localizacao}` : ''}
         </p>
       )}
     </div>
@@ -79,6 +83,7 @@ export function AssinaturasContrato({ contrato }: { contrato: DadosContrato }) {
           papel="CLIENTE (CONTRATANTE)"
           nome={contrato.nome_contratante}
           assinadoEm={contrato.assinado_contratante_em}
+          localizacao={contrato.endereco_contratante}
           fallback="Assinatura do Cliente"
         />
         <BlocoAssinatura
@@ -86,6 +91,7 @@ export function AssinaturasContrato({ contrato }: { contrato: DadosContrato }) {
           papel="TÉCNICO RESPONSÁVEL (CONTRATADA)"
           nome={contrato.nome_contratada}
           assinadoEm={contrato.assinado_contratada_em}
+          localizacao={contrato.endereco_contratada}
           fallback="Assinatura do Técnico"
         />
       </div>

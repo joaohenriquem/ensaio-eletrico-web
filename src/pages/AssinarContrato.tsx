@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router'
 import { Download, Check, FileSignature, AlertTriangle, ScrollText } from 'lucide-react'
 import { buscarContratoPublico, assinarContratoPublico, baixarPdfContratoPublico } from '../api/contratos'
@@ -26,6 +26,18 @@ export default function AssinarContrato() {
   const [assinado, setAssinado] = useState(false)
   const [erro, setErro] = useState('')
   const [modalAberto, setModalAberto] = useState(false)
+  const geoRef = useRef<{ latitude: number; longitude: number } | null>(null)
+
+  async function getIpGeo(): Promise<{ latitude: number; longitude: number } | null> {
+    try {
+      const res = await fetch('https://ipapi.co/json/')
+      const data = await res.json()
+      if (data.latitude && data.longitude) {
+        return { latitude: Number(data.latitude), longitude: Number(data.longitude) }
+      }
+    } catch { /* ignora */ }
+    return null
+  }
 
   useEffect(() => {
     if (!id || !token) { setErroLink(true); setCarregando(false); return }
@@ -39,6 +51,18 @@ export default function AssinarContrato() {
       .finally(() => setCarregando(false))
   }, [id, token])
 
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      getIpGeo().then((geo) => { geoRef.current = geo })
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { geoRef.current = { latitude: pos.coords.latitude, longitude: pos.coords.longitude } },
+      async () => { geoRef.current = await getIpGeo() },
+      { timeout: 8000, maximumAge: 60000 }
+    )
+  }, [])
+
   async function assinar() {
     if (!id || !contrato) return
     if (!nome.trim()) { setErro('Informe seu nome completo.'); return }
@@ -46,7 +70,9 @@ export default function AssinarContrato() {
     setErro('')
     setEnviando(true)
     try {
-      await assinarContratoPublico(id, token, nome.trim(), assinatura)
+      if (!geoRef.current) geoRef.current = await getIpGeo()
+      const geo = geoRef.current
+      await assinarContratoPublico(id, token, nome.trim(), assinatura, geo?.latitude, geo?.longitude)
       setAssinado(true)
       setContrato((ct) => ct ? {
         ...ct,
@@ -167,6 +193,7 @@ export default function AssinarContrato() {
                     papel="CLIENTE (CONTRATANTE)"
                     nome={contrato.nome_contratante}
                     assinadoEm={contrato.assinado_contratante_em}
+                    localizacao={contrato.endereco_contratante}
                     fallback="Assinatura do Cliente"
                   />
                   <BlocoAssinatura
@@ -174,6 +201,7 @@ export default function AssinarContrato() {
                     papel="TÉCNICO RESPONSÁVEL (CONTRATADA)"
                     nome={contrato.nome_contratada}
                     assinadoEm={contrato.assinado_contratada_em}
+                    localizacao={contrato.endereco_contratada}
                     fallback="Assinatura do Técnico"
                   />
                 </div>
@@ -184,6 +212,7 @@ export default function AssinarContrato() {
                     papel="TÉCNICO RESPONSÁVEL (CONTRATADA)"
                     nome={contrato.nome_contratada}
                     assinadoEm={contrato.assinado_contratada_em}
+                    localizacao={contrato.endereco_contratada}
                     fallback="Assinatura do Técnico"
                   />
                 </div>
