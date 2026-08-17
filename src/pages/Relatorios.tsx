@@ -235,9 +235,8 @@ function RelatorioForm({ editData, onSuccess, onCancel }: {
                 setClienteId(id)
                 const cliente = clientes.find(c => c._id === id)
                 if (cliente) {
-                  const endereco = [cliente.cidade, cliente.estado].filter(Boolean).join(' – ')
+                  const endereco = [cliente.endereco, cliente.cidade, cliente.estado].filter(Boolean).join(', ')
                   setForm(f => ({ ...f, endereco: endereco || f.endereco }))
-                  if (cliente.sindico) setNomeAprovador(cliente.sindico)
                 }
               }
               setClienteManual('')
