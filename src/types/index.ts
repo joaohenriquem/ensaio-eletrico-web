@@ -92,8 +92,6 @@ export interface Relatorio {
   normas?: string[]
   objetivo?: string
   paineis?: Painel[]
-  tomadas?: string
-  iluminacao?: string
   conclusao?: string
   assinatura?: string
   nome_aprovador?: string

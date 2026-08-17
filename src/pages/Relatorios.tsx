@@ -159,8 +159,6 @@ function RelatorioForm({ editData, onSuccess, onCancel }: {
     cft: editData?.cft ?? '',
     trt: editData?.trt ?? '',
     objetivo: editData?.objetivo ?? '',
-    tomadas: editData?.tomadas ?? '',
-    iluminacao: editData?.iluminacao ?? '',
     conclusao: editData?.conclusao ?? '',
   })
   const [normas, setNormas] = useState<string[]>(editData?.normas ?? [])
@@ -269,14 +267,6 @@ function RelatorioForm({ editData, onSuccess, onCancel }: {
 
       <Card title="Complementos">
         <div className="flex flex-col gap-3">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Tomadas</label>
-            <textarea rows={2} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#f0a500] focus:outline-none" value={form.tomadas} onChange={(e) => setForm(f => ({ ...f, tomadas: e.target.value }))} />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Iluminação</label>
-            <textarea rows={2} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#f0a500] focus:outline-none" value={form.iluminacao} onChange={(e) => setForm(f => ({ ...f, iluminacao: e.target.value }))} />
-          </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Conclusão</label>
             <textarea rows={4} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#f0a500] focus:outline-none" value={form.conclusao} onChange={(e) => setForm(f => ({ ...f, conclusao: e.target.value }))} />
