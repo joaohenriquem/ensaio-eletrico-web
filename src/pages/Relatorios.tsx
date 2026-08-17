@@ -169,6 +169,7 @@ function RelatorioForm({ editData, onSuccess, onCancel }: {
   const [nomeContratado, setNomeContratado] = useState(editData?.nome_contratado ?? '')
   const [error, setError] = useState('')
   const [savedId, setSavedId] = useState<string | null>(null)
+  const [perguntarPdf, setPerguntarPdf] = useState<{ id: string; numero: string } | null>(null)
 
   const clienteNome = clienteId ? (clientes.find(c => c._id === clienteId)?.nome ?? '') : clienteManual
 
@@ -197,11 +198,17 @@ function RelatorioForm({ editData, onSuccess, onCancel }: {
     try {
       if (isEdit) {
         await atualizar.mutateAsync({ id: editData!._id, data: payload })
-        onSuccess()
+        if (status === 'finalizado') {
+          setPerguntarPdf({ id: editData!._id, numero: editData!.numero })
+        } else {
+          onSuccess()
+        }
       } else {
         const res = await criar.mutateAsync(payload)
         setSavedId(res.id)
-        if (status === 'finalizado') onSuccess()
+        if (status === 'finalizado') {
+          setPerguntarPdf({ id: res.id, numero: res.numero })
+        }
       }
     } catch {
       setError('Não foi possível salvar. Verifique sua conexão e tente novamente.')
@@ -220,7 +227,21 @@ function RelatorioForm({ editData, onSuccess, onCancel }: {
               ...clientes.map(c => ({ value: c._id, label: c.nome })),
             ]}
             value={clienteId}
-            onChange={(e) => { if (e.target.value === '__manual__') setClienteId(''); else setClienteId(e.target.value); setClienteManual('') }}
+            onChange={(e) => {
+              const id = e.target.value
+              if (id === '__manual__') {
+                setClienteId('')
+              } else {
+                setClienteId(id)
+                const cliente = clientes.find(c => c._id === id)
+                if (cliente) {
+                  const endereco = [cliente.cidade, cliente.estado].filter(Boolean).join(' – ')
+                  setForm(f => ({ ...f, endereco: endereco || f.endereco }))
+                  if (cliente.sindico) setNomeAprovador(cliente.sindico)
+                }
+              }
+              setClienteManual('')
+            }}
           />
           {!clienteId && <Input label="Ou digite o cliente" value={clienteManual} onChange={(e) => setClienteManual(e.target.value)} />}
           <Input label="Local *" value={form.local} onChange={(e) => setForm(f => ({ ...f, local: e.target.value }))} placeholder="Condomínio Recanto das Flores" />
@@ -251,19 +272,18 @@ function RelatorioForm({ editData, onSuccess, onCancel }: {
         </div>
       </Card>
 
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-[#1e3050]">Painéis ({paineis.length})</h3>
-        <div className="flex gap-2">
-          <Button size="sm" onClick={addPainel}><Plus size={14} /> Adicionar</Button>
-          <Button size="sm" variant="secondary" onClick={removePainel} disabled={paineis.length <= 1}>
-            <Trash2 size={14} /> Remover
-          </Button>
-        </div>
-      </div>
+      <h3 className="font-semibold text-[#1e3050]">Painéis ({paineis.length})</h3>
 
       {paineis.map((p, i) => (
         <PainelForm key={i} painel={p} index={i} onChange={(np) => setPaineis(prev => prev.map((x, idx) => idx === i ? np : x))} />
       ))}
+
+      <div className="flex justify-end gap-2">
+        <Button size="sm" onClick={addPainel}><Plus size={14} /> Adicionar</Button>
+        <Button size="sm" variant="secondary" onClick={removePainel} disabled={paineis.length <= 1}>
+          <Trash2 size={14} /> Remover
+        </Button>
+      </div>
 
       <Card title="Complementos">
         <div className="flex flex-col gap-3">
@@ -306,6 +326,18 @@ function RelatorioForm({ editData, onSuccess, onCancel }: {
           <CheckCircle size={15} /> {isEdit ? 'Salvar' : 'Finalizar'}
         </Button>
       </div>
+
+      {perguntarPdf && (
+        <ConfirmDialog
+          titulo="Relatório finalizado"
+          mensagem="Deseja gerar o relatório em PDF agora? O download começa automaticamente."
+          confirmLabel="Gerar PDF"
+          confirmVariant="primary"
+          cancelLabel="Agora não"
+          onConfirm={() => { baixarPdfRelatorio(perguntarPdf.id, perguntarPdf.numero); setPerguntarPdf(null); onSuccess() }}
+          onCancel={() => { setPerguntarPdf(null); onSuccess() }}
+        />
+      )}
       <Button variant="outline" onClick={onCancel} className="w-full">Cancelar</Button>
     </div>
   )
