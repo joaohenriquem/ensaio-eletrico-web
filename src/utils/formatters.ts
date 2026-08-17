@@ -1,7 +1,7 @@
 const TZ = 'America/Sao_Paulo'
 
-export function formatarMoeda(valor: number): string {
-  return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+export function formatarMoeda(valor: number | string): string {
+  return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
 export function dataBr(dt: string | Date | null | undefined): string {
