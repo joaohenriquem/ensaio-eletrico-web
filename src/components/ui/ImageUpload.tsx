@@ -33,7 +33,7 @@ export default function ImageUpload({ fotos, onChange, max = 2 }: Props) {
   const [carregando, setCarregando] = useState(false)
 
   async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? [])
+    const files = Array.from(e.target.files ?? []).filter(f => f.type.startsWith('image/'))
     if (!files.length) return
     const disponiveis = max - fotos.length
     const selecionados = files.slice(0, disponiveis)
@@ -85,7 +85,7 @@ export default function ImageUpload({ fotos, onChange, max = 2 }: Props) {
           <span className="text-xs">{carregando ? 'Enviando...' : 'Foto'}</span>
           <input
             type="file"
-            accept="image/*"
+            accept="image/*,text/plain"
             multiple={max - fotos.length > 1}
             disabled={carregando}
             onChange={handleFiles}
