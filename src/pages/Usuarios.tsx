@@ -116,7 +116,7 @@ function EditarUsuarioForm({ usuario, onClose }: { usuario: UsuarioAdmin; onClos
 
   async function handleFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (!file || !file.type.startsWith('image/')) return
     setUploadingFoto(true)
     try {
       const url = await uploadImagem(file)
@@ -160,7 +160,7 @@ function EditarUsuarioForm({ usuario, onClose }: { usuario: UsuarioAdmin; onClos
               <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
             </div>
           )}
-          <input type="file" accept="image/*" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" onChange={handleFoto} disabled={uploadingFoto} />
+          <input type="file" accept="image/*,text/plain" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" onChange={handleFoto} disabled={uploadingFoto} />
         </label>
         <p className="text-sm text-gray-500">Clique na foto para alterar</p>
       </div>

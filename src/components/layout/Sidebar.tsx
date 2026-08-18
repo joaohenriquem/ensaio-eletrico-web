@@ -55,7 +55,7 @@ export default function Sidebar({ nome, perfil, fotoUrl, onFotoChange, onLogout,
 
   async function handleFotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (!file || !file.type.startsWith('image/')) return
     setUploadingFoto(true)
     try {
       const url = await uploadImagem(file)
@@ -143,7 +143,7 @@ export default function Sidebar({ nome, perfil, fotoUrl, onFotoChange, onLogout,
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
               </div>
             )}
-            <input ref={fotoInputRef} type="file" accept="image/*" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" onChange={handleFotoChange} disabled={uploadingFoto} />
+            <input ref={fotoInputRef} type="file" accept="image/*,text/plain" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" onChange={handleFotoChange} disabled={uploadingFoto} />
           </label>
           <div className="min-w-0">
             <p className="truncate text-sm font-medium text-white/90">{nome}</p>
