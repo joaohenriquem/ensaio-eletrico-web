@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ImagePlus, Loader2, X } from 'lucide-react'
 import { uploadImagem } from '../../api/uploads'
+import { recuperarUrlQuebrada } from '../../offline/fotos'
 
 interface Props {
   fotos: string[]
@@ -56,6 +57,14 @@ export default function ImageUpload({ fotos, onChange, max = 2 }: Props) {
     onChange(fotos.filter((_, idx) => idx !== i))
   }
 
+  // O Android às vezes invalida a URL "blob:" de uma foto tirada offline
+  // (ex: ao voltar da câmera). Se isso acontecer, tenta gerar uma blob:
+  // nova a partir do arquivo que já está salvo no IndexedDB.
+  async function tentarRecuperar(i: number, srcQuebrado: string) {
+    const novaUrl = await recuperarUrlQuebrada(srcQuebrado)
+    if (novaUrl) onChange(fotos.map((f, idx) => (idx === i ? novaUrl : f)))
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-2 mt-2">
       {fotos.map((src, i) => (
@@ -64,6 +73,7 @@ export default function ImageUpload({ fotos, onChange, max = 2 }: Props) {
             src={src}
             alt={`foto ${i + 1}`}
             className="h-20 w-20 rounded-lg object-cover border border-gray-200 shadow-sm"
+            onError={() => tentarRecuperar(i, src)}
           />
           <button
             onClick={() => remover(i)}

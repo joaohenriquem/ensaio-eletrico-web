@@ -19,6 +19,23 @@ export function idDaFotoPendente(blobUrl: string): string | undefined {
   return blobParaId.get(blobUrl)
 }
 
+/**
+ * O Chrome no Android às vezes invalida a URL "blob:" de uma foto (ex: ao
+ * abrir a câmera e voltar), mesmo com a página ainda "viva" e o blob salvo
+ * no IndexedDB. Usado no onError do <img> pra gerar uma blob: nova a partir
+ * do arquivo que já está persistido, sem precisar tirar a foto de novo.
+ */
+export async function recuperarUrlQuebrada(urlQuebrada: string): Promise<string | null> {
+  const id = blobParaId.get(urlQuebrada)
+  if (!id) return null
+  const novaUrl = await resolverFotoPendente(id)
+  if (novaUrl) {
+    blobParaId.delete(urlQuebrada)
+    blobParaId.set(novaUrl, id)
+  }
+  return novaUrl
+}
+
 export async function resolverFotoPendente(id: string): Promise<string | null> {
   const file = await get<File>(id, fotosDb)
   if (!file) return null
