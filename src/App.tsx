@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, type ReactNode } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
+import { queryClient } from './queryClient'
+import { queryPersister } from './offline/queryPersister'
 import { AuthContext, type AuthContextValue } from './hooks/useAuth'
 import { buscarMeuPerfil, refreshToken } from './api/auth'
 import { useAuth } from './hooks/useAuth'
@@ -20,10 +22,10 @@ import Relatorios from './pages/Relatorios'
 import Propostas from './pages/Propostas'
 import Contratos from './pages/Contratos'
 import AssinarContrato from './pages/AssinarContrato'
+import PwaUpdatePrompt from './components/PwaUpdatePrompt'
+import { iniciarSincronizacaoAutomatica } from './offline/sync'
 
-const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
-})
+const PERSISTED_QUERY_KEYS = ['clientes', 'relatorios', 'ordens']
 
 function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<Usuario | null>(() => {
@@ -97,8 +99,22 @@ function PrivateRoute({ children }: { children: ReactNode }) {
 }
 
 export default function App() {
+  useEffect(() => iniciarSincronizacaoAutomatica(), [])
+
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{
+        persister: queryPersister,
+        maxAge: 1000 * 60 * 60 * 24,
+        dehydrateOptions: {
+          shouldDehydrateQuery: (query) =>
+            query.state.status === 'success' &&
+            PERSISTED_QUERY_KEYS.includes(query.queryKey[0] as string),
+        },
+      }}
+    >
+      <PwaUpdatePrompt />
       <AuthProvider>
         <BrowserRouter>
           <Routes>
@@ -120,6 +136,6 @@ export default function App() {
           </Routes>
         </BrowserRouter>
       </AuthProvider>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   )
 }

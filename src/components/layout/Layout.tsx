@@ -1,9 +1,13 @@
 import { useState, useMemo } from 'react'
 import type { ReactNode } from 'react'
-import { Menu, LogOut, Moon } from 'lucide-react'
+import { Menu, LogOut, Moon, WifiOff, RefreshCw } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import Sidebar from './Sidebar'
 import { useAuth } from '../../hooks/useAuth'
+import { useOnlineStatus } from '../../hooks/useOnlineStatus'
+import { useOutbox } from '../../offline/useOutbox'
+import { sincronizarPendentes } from '../../offline/sync'
+import { useSessaoExpiradaNaSync } from '../../offline/syncStatus'
 
 interface Props {
   children: ReactNode
@@ -15,6 +19,11 @@ export default function Layout({ children, onFotoChange }: Props) {
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
+  const online = useOnlineStatus()
+  const pendentesOrdens = useOutbox('ordens')
+  const pendentesRelatorios = useOutbox('relatorios')
+  const totalPendentes = pendentesOrdens.length + pendentesRelatorios.length
+  const sessaoExpirada = useSessaoExpiradaNaSync()
 
   function handleLogoutMobile() {
     logout()
@@ -60,10 +69,34 @@ export default function Layout({ children, onFotoChange }: Props) {
           </button>
         </header>
 
-        {apiOffline && (
+        {!online && (
+          <div className="flex items-center gap-2 bg-amber-50 border-b border-amber-200 px-4 py-2.5 text-amber-800">
+            <WifiOff size={15} className="shrink-0" />
+            <p className="text-xs font-medium">Sem conexão com a internet. Algumas funções podem não responder.</p>
+          </div>
+        )}
+        {online && apiOffline && (
           <div className="flex items-center gap-2 bg-amber-50 border-b border-amber-200 px-4 py-2.5 text-amber-800">
             <Moon size={15} className="shrink-0" />
             <p className="text-xs font-medium">Sistema em modo econômico — API offline entre 22h30 e 8h30. Algumas funções podem não responder.</p>
+          </div>
+        )}
+        {online && totalPendentes > 0 && (
+          <div className="flex items-center gap-2 bg-amber-50 border-b border-amber-200 px-4 py-2.5 text-amber-800">
+            <RefreshCw size={15} className="shrink-0" />
+            <p className="flex-1 text-xs font-medium">
+              {sessaoExpirada
+                ? 'Sessão expirada — faça login novamente pra sincronizar os itens pendentes.'
+                : `${totalPendentes} ite${totalPendentes !== 1 ? 'ns' : 'm'} aguardando sincronização.`}
+            </p>
+            {!sessaoExpirada && (
+              <button
+                onClick={() => sincronizarPendentes()}
+                className="shrink-0 rounded-lg bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-200"
+              >
+                Sincronizar agora
+              </button>
+            )}
           </div>
         )}
         <main className="p-4 pt-6 lg:px-6 lg:pb-6 lg:pt-3">{children}</main>

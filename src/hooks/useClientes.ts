@@ -6,6 +6,7 @@ export function useClientes(params?: { ativo?: boolean; busca?: string }) {
   return useQuery({
     queryKey: ['clientes', params],
     queryFn: () => listarClientes(params),
+    gcTime: 1000 * 60 * 60 * 24,
   })
 }
 

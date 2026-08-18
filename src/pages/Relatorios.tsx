@@ -14,6 +14,9 @@ import {
 } from '../utils/constants'
 import { dataBr } from '../utils/formatters'
 import { baixarPdfRelatorio } from '../api/relatorios'
+import { foiEnfileirado } from '../offline/outboxMutation'
+import { useOutbox } from '../offline/useOutbox'
+import { remover } from '../offline/outbox'
 import type { Anexo, Painel, Relatorio } from '../types'
 import Card from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
@@ -199,17 +202,23 @@ function RelatorioForm({ editData, onSuccess, onCancel }: {
     }
     try {
       if (isEdit) {
-        await atualizar.mutateAsync({ id: editData!._id, data: payload })
-        if (status === 'finalizado') {
+        const res = await atualizar.mutateAsync({ id: editData!._id, data: payload })
+        if (foiEnfileirado(res)) {
+          onSuccess()
+        } else if (status === 'finalizado') {
           setPerguntarPdf({ id: editData!._id, numero: editData!.numero })
         } else {
           onSuccess()
         }
       } else {
         const res = await criar.mutateAsync(payload)
-        setSavedId(res.id)
-        if (status === 'finalizado') {
-          setPerguntarPdf({ id: res.id, numero: res.numero })
+        if (foiEnfileirado(res)) {
+          onSuccess()
+        } else {
+          setSavedId(res.id)
+          if (status === 'finalizado') {
+            setPerguntarPdf({ id: res.id, numero: res.numero })
+          }
         }
       }
     } catch {
@@ -422,6 +431,34 @@ function RelatorioCard({ relatorio, onEdit, onExcluir }: {
   )
 }
 
+function RelatorioCardPendente({ item, onDescartar }: { item: import('../offline/outbox').OutboxItem; onDescartar: () => void }) {
+  const payload = item.payload as Partial<Relatorio>
+  const qtdPaineis = (payload.paineis ?? []).length
+  const qtdAnexos = (payload.anexos ?? []).length
+  return (
+    <div className="overflow-hidden rounded-xl border border-dashed border-amber-300 bg-amber-50/60 px-4 py-3.5">
+      <div className="flex items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-100 mt-0.5">
+          <Wrench size={16} className="text-amber-600" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+            {item.ultimoErro ? 'Erro ao sincronizar' : 'Pendente de sincronização'}
+          </span>
+          <p className="mt-0.5 truncate font-semibold text-[#1e3050] text-sm">{payload.cliente_nome ?? '—'}</p>
+          <p className="text-xs text-gray-500">
+            {payload.local} · {qtdPaineis} painel{qtdPaineis !== 1 ? 'is' : ''}{qtdAnexos ? ` · ${qtdAnexos} anexo${qtdAnexos !== 1 ? 's' : ''}` : ''}
+          </p>
+          {item.ultimoErro && <p className="mt-1 text-xs text-red-600">{item.ultimoErro}</p>}
+        </div>
+        <button onClick={onDescartar} className="shrink-0 rounded-lg bg-white px-2 py-1 text-xs text-red-600 shadow-sm ring-1 ring-red-200 active:bg-red-50">
+          Descartar
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function Relatorios() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editRel, setEditRel] = useState<Relatorio | null>(null)
@@ -430,6 +467,7 @@ export default function Relatorios() {
 
   const { data: relatorios = [], isLoading } = useRelatorios()
   const excluir = useExcluirRelatorio()
+  const pendentes = useOutbox('relatorios')
 
   function abrirNovo() { setEditRel(null); setNovoRelKey(k => k + 1); setDrawerOpen(true) }
   function abrirEditar(rel: Relatorio) { setEditRel(rel); setDrawerOpen(true) }
@@ -443,13 +481,16 @@ export default function Relatorios() {
 
       {isLoading ? (
         <p className="py-12 text-center text-sm text-gray-400">Carregando...</p>
-      ) : relatorios.length === 0 ? (
+      ) : relatorios.length === 0 && pendentes.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-12 text-gray-400">
           <Wrench size={32} className="opacity-30" />
           <p className="text-sm">Nenhum relatório encontrado.</p>
         </div>
       ) : (
         <div className="flex flex-col gap-2">
+          {pendentes.map(item => (
+            <RelatorioCardPendente key={item.localId} item={item} onDescartar={() => remover(item.localId)} />
+          ))}
           {relatorios.map(rel => (
             <RelatorioCard
               key={rel._id}

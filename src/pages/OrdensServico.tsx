@@ -6,6 +6,9 @@ import BottomDrawer from '../components/ui/BottomDrawer'
 import { useClientes } from '../hooks/useClientes'
 import { STATUS_OS, STATUS_OS_COR, TIPOS_OS } from '../utils/constants'
 import { dataBr } from '../utils/formatters'
+import { foiEnfileirado } from '../offline/outboxMutation'
+import { useOutbox } from '../offline/useOutbox'
+import { remover } from '../offline/outbox'
 import type { OrdemServico } from '../types'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
@@ -62,9 +65,9 @@ function OSForm({ editData, onSuccess, onCancel }: {
       if (isEdit) {
         await atualizar.mutateAsync({ id: editData!._id, data: payload })
       } else {
-        const { id } = await criar.mutateAsync(payload)
-        if (emailAprovacao.trim()) {
-          await enviarEmail.mutateAsync({ id, destinatario: emailAprovacao.trim(), tipo: 'aprovacao' })
+        const res = await criar.mutateAsync(payload)
+        if (!foiEnfileirado(res) && emailAprovacao.trim()) {
+          await enviarEmail.mutateAsync({ id: res.id, destinatario: emailAprovacao.trim(), tipo: 'aprovacao' })
         }
       }
       onSuccess()
@@ -282,6 +285,32 @@ function OSCard({ os, onEdit, onStatus, onEmail, onExcluir }: {
   )
 }
 
+function OSCardPendente({ item, onDescartar }: { item: import('../offline/outbox').OutboxItem; onDescartar: () => void }) {
+  const payload = item.payload as Partial<OrdemServico>
+  return (
+    <div className="overflow-hidden rounded-xl border border-dashed border-amber-300 bg-amber-50/60 px-4 py-3.5">
+      <div className="flex items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-100 mt-0.5">
+          <ClipboardList size={16} className="text-amber-600" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+              {item.ultimoErro ? 'Erro ao sincronizar' : 'Pendente de sincronização'}
+            </span>
+          </div>
+          <p className="mt-0.5 truncate font-semibold text-[#1e3050] text-sm">{payload.cliente_nome ?? '—'}</p>
+          <p className="text-xs text-gray-500">{payload.tipo} · {payload.descricao}</p>
+          {item.ultimoErro && <p className="mt-1 text-xs text-red-600">{item.ultimoErro}</p>}
+        </div>
+        <button onClick={onDescartar} className="shrink-0 rounded-lg bg-white px-2 py-1 text-xs text-red-600 shadow-sm ring-1 ring-red-200 active:bg-red-50">
+          Descartar
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function OrdensServico() {
   const [filtroStatus, setFiltroStatus] = useState('todos')
   const [filtroTipo, setFiltroTipo] = useState('todos')
@@ -299,6 +328,7 @@ export default function OrdensServico() {
 
   const enviarEmail = useEnviarEmailOS()
   const excluir = useExcluirOrdem()
+  const pendentes = useOutbox('ordens')
 
   const { data: ordens = [], isLoading } = useOrdens({
     status: filtroStatus === 'todos' ? undefined : filtroStatus,
@@ -354,13 +384,16 @@ export default function OrdensServico() {
 
       {isLoading ? (
         <p className="py-12 text-center text-sm text-gray-400">Carregando...</p>
-      ) : ordens.length === 0 ? (
+      ) : ordens.length === 0 && pendentes.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-12 text-gray-400">
           <ClipboardList size={32} className="opacity-30" />
           <p className="text-sm">Nenhuma OS encontrada.</p>
         </div>
       ) : (
         <div className="flex flex-col gap-2">
+          {pendentes.map(item => (
+            <OSCardPendente key={item.localId} item={item} onDescartar={() => remover(item.localId)} />
+          ))}
           {ordens.map(os => (
             <OSCard
               key={os._id}
