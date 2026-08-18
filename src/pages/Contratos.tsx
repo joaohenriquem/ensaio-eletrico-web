@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Plus, Trash2, Download, FileSignature, ChevronDown, MapPin, Link2, Mail, Check, PenLine, ScrollText } from 'lucide-react'
+import { Plus, Trash2, Download, FileSignature, ChevronDown, MapPin, Link2, Mail, Check, PenLine, ScrollText, Copy } from 'lucide-react'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import BottomDrawer from '../components/ui/BottomDrawer'
 import { useContratos, useCriarContrato, useAtualizarContrato, useExcluirContrato } from '../hooks/useContratos'
@@ -315,9 +315,10 @@ function EnviarLinkDrawer({ contrato, open, onClose }: { contrato: Contrato | nu
   )
 }
 
-function ContratoCard({ contrato, onEdit, onVer, onEnviar, onExcluir }: {
+function ContratoCard({ contrato, onEdit, onClonar, onVer, onEnviar, onExcluir }: {
   contrato: Contrato
   onEdit: () => void
+  onClonar: () => void
   onVer: () => void
   onEnviar: () => void
   onExcluir: () => void
@@ -374,6 +375,9 @@ function ContratoCard({ contrato, onEdit, onVer, onEnviar, onExcluir }: {
             <button onClick={onEdit} className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm ring-1 ring-gray-200 active:bg-gray-50">
               Editar
             </button>
+            <button onClick={onClonar} className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm ring-1 ring-gray-200 active:bg-gray-50">
+              <Copy size={12} /> Clonar
+            </button>
             <button onClick={() => baixarPdfContrato(contrato._id, contrato.numero)} className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm ring-1 ring-gray-200 active:bg-gray-50">
               <Download size={12} /> PDF
             </button>
@@ -398,6 +402,7 @@ export default function Contratos() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [enviarDrawerOpen, setEnviarDrawerOpen] = useState(false)
   const [editContrato, setEditContrato] = useState<Contrato | null>(null)
+  const [novoContratoKey, setNovoContratoKey] = useState(0)
   const [enviarContrato, setEnviarContrato] = useState<Contrato | null>(null)
   const [verContrato, setVerContrato] = useState<Contrato | null>(null)
   const [excluirId, setExcluirId] = useState<string | null>(null)
@@ -408,9 +413,34 @@ export default function Contratos() {
     cliente: filtroBusca || undefined,
   })
 
-  function abrirNovo() { setEditContrato(null); setDrawerOpen(true) }
+  function abrirNovo() { setEditContrato(null); setNovoContratoKey(k => k + 1); setDrawerOpen(true) }
   function abrirEditar(ct: Contrato) { setEditContrato(ct); setDrawerOpen(true) }
   function abrirEnviar(ct: Contrato) { setEnviarContrato(ct); setEnviarDrawerOpen(true) }
+
+  function abrirClonar(ct: Contrato) {
+    setEditContrato({
+      ...ct,
+      _id: '',
+      numero: '',
+      guid: undefined,
+      status: 'rascunho',
+      assinatura_contratada: undefined,
+      nome_contratada: undefined,
+      assinado_contratada_em: undefined,
+      latitude_contratada: undefined,
+      longitude_contratada: undefined,
+      endereco_contratada: undefined,
+      assinatura_contratante: undefined,
+      nome_contratante: undefined,
+      assinado_contratante_em: undefined,
+      latitude_contratante: undefined,
+      longitude_contratante: undefined,
+      endereco_contratante: undefined,
+      criado_em: undefined,
+    })
+    setNovoContratoKey(k => k + 1)
+    setDrawerOpen(true)
+  }
 
   return (
     <div className="flex flex-col gap-4 pb-24">
@@ -447,6 +477,7 @@ export default function Contratos() {
               key={ct._id}
               contrato={ct}
               onEdit={() => abrirEditar(ct)}
+              onClonar={() => abrirClonar(ct)}
               onVer={() => setVerContrato(ct)}
               onEnviar={() => abrirEnviar(ct)}
               onExcluir={() => setExcluirId(ct._id)}
@@ -464,8 +495,8 @@ export default function Contratos() {
         <Plus size={26} strokeWidth={2.5} />
       </button>
 
-      <BottomDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title={editContrato ? 'Editar Contrato' : 'Novo Contrato'}>
-        <ContratoForm key={editContrato?._id ?? 'new'} editData={editContrato} onSuccess={() => setDrawerOpen(false)} onCancel={() => setDrawerOpen(false)} />
+      <BottomDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title={editContrato?._id ? 'Editar Contrato' : 'Novo Contrato'}>
+        <ContratoForm key={editContrato?._id ?? `new-${novoContratoKey}`} editData={editContrato} onSuccess={() => setDrawerOpen(false)} onCancel={() => setDrawerOpen(false)} />
       </BottomDrawer>
 
       <EnviarLinkDrawer contrato={enviarContrato} open={enviarDrawerOpen} onClose={() => setEnviarDrawerOpen(false)} />

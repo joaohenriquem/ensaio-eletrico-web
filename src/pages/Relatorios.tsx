@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Plus, Trash2, Download, CheckCircle, ChevronDown, Pencil, Wrench, MapPin, User } from 'lucide-react'
 import ImageUpload from '../components/ui/ImageUpload'
+import AnexoUpload from '../components/ui/AnexoUpload'
 import SignaturePad from '../components/ui/SignaturePad'
 import { useRelatorios, useCriarRelatorio, useAtualizarRelatorio, useExcluirRelatorio } from '../hooks/useRelatorios'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
@@ -13,7 +14,7 @@ import {
 } from '../utils/constants'
 import { dataBr } from '../utils/formatters'
 import { baixarPdfRelatorio } from '../api/relatorios'
-import type { Painel, Relatorio } from '../types'
+import type { Anexo, Painel, Relatorio } from '../types'
 import Card from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
@@ -163,6 +164,7 @@ function RelatorioForm({ editData, onSuccess, onCancel }: {
   })
   const [normas, setNormas] = useState<string[]>(editData?.normas ?? [])
   const [paineis, setPaineis] = useState<Painel[]>((editData?.paineis as Painel[] | undefined) ?? [painelVazio('Painel 1') as Painel])
+  const [anexos, setAnexos] = useState<Anexo[]>(editData?.anexos ?? [])
   const [assinatura, setAssinatura] = useState(editData?.assinatura ?? '')
   const [nomeAprovador, setNomeAprovador] = useState(editData?.nome_aprovador ?? '')
   const [assinaturaContratado, setAssinaturaContratado] = useState(editData?.assinatura_contratado ?? '')
@@ -182,13 +184,13 @@ function RelatorioForm({ editData, onSuccess, onCancel }: {
   }
 
   async function salvar(status: 'rascunho' | 'finalizado') {
-    if (!clienteNome || !form.local) { setError('Cliente e local são obrigatórios.'); return }
+    if (!clienteNome || !form.local) { setError('Cliente e endereço são obrigatórios.'); return }
     setError('')
     const payload = {
       ...form,
       cliente_id: clienteId || undefined,
       cliente_nome: clienteNome,
-      normas, paineis,
+      normas, paineis, anexos,
       assinatura: assinatura || undefined,
       nome_aprovador: nomeAprovador || undefined,
       assinatura_contratado: assinaturaContratado || undefined,
@@ -235,16 +237,20 @@ function RelatorioForm({ editData, onSuccess, onCancel }: {
                 setClienteId(id)
                 const cliente = clientes.find(c => c._id === id)
                 if (cliente) {
-                  const endereco = [cliente.endereco, cliente.cidade, cliente.estado].filter(Boolean).join(', ')
-                  setForm(f => ({ ...f, endereco: endereco || f.endereco }))
+                  const cidadeEstado = [cliente.cidade, cliente.estado].filter(Boolean).join(' – ')
+                  setForm(f => ({
+                    ...f,
+                    local: cliente.endereco || f.local,
+                    endereco: cidadeEstado || f.endereco,
+                  }))
                 }
               }
               setClienteManual('')
             }}
           />
           {!clienteId && <Input label="Ou digite o cliente" value={clienteManual} onChange={(e) => setClienteManual(e.target.value)} />}
-          <Input label="Local *" value={form.local} onChange={(e) => setForm(f => ({ ...f, local: e.target.value }))} placeholder="Condomínio Recanto das Flores" />
-          <Input label="Endereço / Cidade" value={form.endereco} onChange={(e) => setForm(f => ({ ...f, endereco: e.target.value }))} placeholder="Osasco – SP" />
+          <Input label="Endereço *" value={form.local} onChange={(e) => setForm(f => ({ ...f, local: e.target.value }))} placeholder="Avenida Hilário Pereira de Souza, 492" />
+          <Input label="Cidade / Estado" value={form.endereco} onChange={(e) => setForm(f => ({ ...f, endereco: e.target.value }))} placeholder="Osasco – SP" />
           <div className="grid grid-cols-2 gap-3">
             <Input label="Data" type="date" value={form.data} onChange={(e) => setForm(f => ({ ...f, data: e.target.value }))} />
             <Input label="Técnico" value={form.tecnico} onChange={(e) => setForm(f => ({ ...f, tecnico: e.target.value }))} />
@@ -289,6 +295,10 @@ function RelatorioForm({ editData, onSuccess, onCancel }: {
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Conclusão</label>
             <textarea rows={4} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#f0a500] focus:outline-none" value={form.conclusao} onChange={(e) => setForm(f => ({ ...f, conclusao: e.target.value }))} />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Anexos</label>
+            <AnexoUpload anexos={anexos} onChange={setAnexos} max={5} />
           </div>
         </div>
       </Card>
@@ -416,11 +426,12 @@ export default function Relatorios() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editRel, setEditRel] = useState<Relatorio | null>(null)
   const [excluirId, setExcluirId] = useState<string | null>(null)
+  const [novoRelKey, setNovoRelKey] = useState(0)
 
   const { data: relatorios = [], isLoading } = useRelatorios()
   const excluir = useExcluirRelatorio()
 
-  function abrirNovo() { setEditRel(null); setDrawerOpen(true) }
+  function abrirNovo() { setEditRel(null); setNovoRelKey(k => k + 1); setDrawerOpen(true) }
   function abrirEditar(rel: Relatorio) { setEditRel(rel); setDrawerOpen(true) }
 
   return (
@@ -460,7 +471,7 @@ export default function Relatorios() {
       </button>
 
       <BottomDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title={editRel ? 'Editar Relatório' : 'Novo Relatório'}>
-        <RelatorioForm key={editRel?._id ?? 'new'} editData={editRel} onSuccess={() => setDrawerOpen(false)} onCancel={() => setDrawerOpen(false)} />
+        <RelatorioForm key={editRel?._id ?? `new-${novoRelKey}`} editData={editRel} onSuccess={() => setDrawerOpen(false)} onCancel={() => setDrawerOpen(false)} />
       </BottomDrawer>
 
       {excluirId && (

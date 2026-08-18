@@ -78,6 +78,11 @@ export interface Painel {
   fotos_verificacao_eletrica?: string[]
 }
 
+export interface Anexo {
+  nome: string
+  url: string
+}
+
 export interface Relatorio {
   _id: string
   numero: string
@@ -93,6 +98,7 @@ export interface Relatorio {
   objetivo?: string
   paineis?: Painel[]
   conclusao?: string
+  anexos?: Anexo[]
   assinatura?: string
   nome_aprovador?: string
   assinatura_contratado?: string

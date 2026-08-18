@@ -341,6 +341,7 @@ export default function Propostas() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [statusDrawerOpen, setStatusDrawerOpen] = useState(false)
   const [editProp, setEditProp] = useState<Proposta | null>(null)
+  const [novoPropKey, setNovoPropKey] = useState(0)
   const [statusProp, setStatusProp] = useState<Proposta | null>(null)
   const [excluirId, setExcluirId] = useState<string | null>(null)
 
@@ -350,7 +351,7 @@ export default function Propostas() {
     cliente: filtroBusca || undefined,
   })
 
-  function abrirNovo() { setEditProp(null); setDrawerOpen(true) }
+  function abrirNovo() { setEditProp(null); setNovoPropKey(k => k + 1); setDrawerOpen(true) }
   function abrirEditar(p: Proposta) { setEditProp(p); setDrawerOpen(true) }
   function abrirStatus(p: Proposta) { setStatusProp(p); setStatusDrawerOpen(true) }
 
@@ -406,7 +407,7 @@ export default function Propostas() {
       </button>
 
       <BottomDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title={editProp ? 'Editar Proposta' : 'Nova Proposta'}>
-        <PropostaForm key={editProp?._id ?? 'new'} editData={editProp} onSuccess={() => setDrawerOpen(false)} onCancel={() => setDrawerOpen(false)} />
+        <PropostaForm key={editProp?._id ?? `new-${novoPropKey}`} editData={editProp} onSuccess={() => setDrawerOpen(false)} onCancel={() => setDrawerOpen(false)} />
       </BottomDrawer>
 
       <StatusPropostaDrawer proposta={statusProp} open={statusDrawerOpen} onClose={() => setStatusDrawerOpen(false)} />

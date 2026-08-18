@@ -219,6 +219,7 @@ export default function Clientes() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editCliente, setEditCliente] = useState<Cliente | null>(null)
   const [excluirId, setExcluirId] = useState<string | null>(null)
+  const [novoClienteKey, setNovoClienteKey] = useState(0)
 
   const { data = [], isLoading } = useClientes({ ativo: true })
   const criar = useCriarCliente()
@@ -232,6 +233,7 @@ export default function Clientes() {
 
   function abrirNovo() {
     setEditCliente(null)
+    setNovoClienteKey(k => k + 1)
     setDrawerOpen(true)
   }
 
@@ -309,7 +311,7 @@ export default function Clientes() {
         title={editCliente ? 'Editar Cliente' : 'Novo Cliente'}
       >
         <ClienteForm
-          key={editCliente?._id ?? 'new'}
+          key={editCliente?._id ?? `new-${novoClienteKey}`}
           inicial={editCliente}
           onSave={salvar}
           onCancel={() => setDrawerOpen(false)}

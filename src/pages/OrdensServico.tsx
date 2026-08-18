@@ -289,6 +289,7 @@ export default function OrdensServico() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [statusDrawerOpen, setStatusDrawerOpen] = useState(false)
   const [editOS, setEditOS] = useState<OrdemServico | null>(null)
+  const [novoOSKey, setNovoOSKey] = useState(0)
   const [statusOS, setStatusOS] = useState<OrdemServico | null>(null)
   const [excluirId, setExcluirId] = useState<string | null>(null)
   const [emailModal, setEmailModal] = useState<{ open: boolean; os: OrdemServico | null }>({ open: false, os: null })
@@ -305,7 +306,7 @@ export default function OrdensServico() {
     cliente: filtroBusca || undefined,
   })
 
-  function abrirNovo() { setEditOS(null); setDrawerOpen(true) }
+  function abrirNovo() { setEditOS(null); setNovoOSKey(k => k + 1); setDrawerOpen(true) }
   function abrirEditar(os: OrdemServico) { setEditOS(os); setDrawerOpen(true) }
   function abrirStatus(os: OrdemServico) { setStatusOS(os); setStatusDrawerOpen(true) }
 
@@ -383,7 +384,7 @@ export default function OrdensServico() {
       </button>
 
       <BottomDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title={editOS ? 'Editar OS' : 'Nova OS'}>
-        <OSForm key={editOS?._id ?? 'new'} editData={editOS} onSuccess={() => setDrawerOpen(false)} onCancel={() => setDrawerOpen(false)} />
+        <OSForm key={editOS?._id ?? `new-${novoOSKey}`} editData={editOS} onSuccess={() => setDrawerOpen(false)} onCancel={() => setDrawerOpen(false)} />
       </BottomDrawer>
 
       <StatusDrawer os={statusOS} open={statusDrawerOpen} onClose={() => setStatusDrawerOpen(false)} />
