@@ -39,3 +39,6 @@ Thumbs.db
 # Selenium (compilação TS — ignora JS mas mantém package.json)
 /selenium/dist/**/*.js
 /selenium/dist/**/*.d.ts
+
+# Relatórios gerados localmente durante testes manuais
+src/static/REL-*.pdf
