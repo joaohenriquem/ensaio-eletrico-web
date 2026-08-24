@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { Menu, LogOut, Moon, WifiOff, RefreshCw } from 'lucide-react'
+import { Menu, LogOut, WifiOff, RefreshCw } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import Sidebar from './Sidebar'
 import { useAuth } from '../../hooks/useAuth'
@@ -29,12 +29,6 @@ export default function Layout({ children, onFotoChange }: Props) {
     logout()
     navigate('/login')
   }
-
-  const apiOffline = useMemo(() => {
-    const now = new Date()
-    const brtMinutes = ((now.getUTCHours() * 60 + now.getUTCMinutes()) - 3 * 60 + 1440) % 1440
-    return brtMinutes >= 22 * 60 + 30 || brtMinutes < 8 * 60 + 30
-  }, [])
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -73,12 +67,6 @@ export default function Layout({ children, onFotoChange }: Props) {
           <div className="flex items-center gap-2 bg-amber-50 border-b border-amber-200 px-4 py-2.5 text-amber-800">
             <WifiOff size={15} className="shrink-0" />
             <p className="text-xs font-medium">Sem conexão com a internet. Algumas funções podem não responder.</p>
-          </div>
-        )}
-        {online && apiOffline && (
-          <div className="flex items-center gap-2 bg-amber-50 border-b border-amber-200 px-4 py-2.5 text-amber-800">
-            <Moon size={15} className="shrink-0" />
-            <p className="text-xs font-medium">Sistema em modo econômico — API offline entre 22h30 e 8h30. Algumas funções podem não responder.</p>
           </div>
         )}
         {online && totalPendentes > 0 && (
