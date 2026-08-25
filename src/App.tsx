@@ -71,12 +71,37 @@ function AuthProvider({ children }: { children: ReactNode }) {
     if (!currentToken || refreshedRef.current) return
     if (localStorage.getItem('lembrar') !== '1') return
     refreshedRef.current = true
-    refreshToken()
-      .then((res) => {
-        localStorage.setItem('token', res.token)
-        setToken(res.token)
+
+    async function getIpGeo(): Promise<{ latitude: number; longitude: number } | null> {
+      try {
+        const res = await fetch('https://ipapi.co/json/')
+        const data = await res.json()
+        if (data.latitude && data.longitude) {
+          return { latitude: Number(data.latitude), longitude: Number(data.longitude) }
+        }
+      } catch { /* ignora */ }
+      return null
+    }
+
+    async function getGeo(): Promise<{ latitude: number; longitude: number } | null> {
+      if (!navigator.geolocation) return getIpGeo()
+      return new Promise((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+          async () => resolve(await getIpGeo()),
+          { timeout: 8000, maximumAge: 60000 }
+        )
       })
-      .catch(() => {})
+    }
+
+    getGeo().then((geo) => {
+      refreshToken(geo?.latitude, geo?.longitude)
+        .then((res) => {
+          localStorage.setItem('token', res.token)
+          setToken(res.token)
+        })
+        .catch(() => {})
+    })
   }, [])
 
   useEffect(() => {

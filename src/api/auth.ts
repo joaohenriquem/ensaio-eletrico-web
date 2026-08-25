@@ -11,8 +11,8 @@ export async function verifyOtp(userId: string, otp: string, latitude?: number, 
   return data
 }
 
-export async function refreshToken(): Promise<{ token: string }> {
-  const { data } = await api.post<{ token: string }>('/auth/refresh')
+export async function refreshToken(latitude?: number, longitude?: number): Promise<{ token: string }> {
+  const { data } = await api.post<{ token: string }>('/auth/refresh', { latitude, longitude })
   return data
 }
 
