@@ -364,8 +364,23 @@ function ContratoCard({ contrato, onEdit, onClonar, onVer, onEnviar, onExcluir }
               Técnico: {contrato.assinado_contratada_em ? `assinado em ${new Date(contrato.assinado_contratada_em).toLocaleDateString('pt-BR')}` : 'pendente'}
             </span>
             <span className="flex items-center gap-1.5">
-              <PenLine size={12} className={contrato.assinado_contratante_em ? 'text-green-500' : 'text-gray-300'} />
-              Cliente: {contrato.assinado_contratante_em ? `assinado em ${new Date(contrato.assinado_contratante_em).toLocaleDateString('pt-BR')}` : 'pendente'}
+              <PenLine
+                size={12}
+                className={
+                  contrato.assinado_contratante_em
+                    ? 'text-green-500'
+                    : contrato.visualizado_contratante_em
+                      ? 'text-amber-500'
+                      : 'text-gray-300'
+                }
+              />
+              Cliente: {
+                contrato.assinado_contratante_em
+                  ? `assinado em ${new Date(contrato.assinado_contratante_em).toLocaleDateString('pt-BR')}`
+                  : contrato.visualizado_contratante_em
+                    ? `visualizado em ${new Date(contrato.visualizado_contratante_em).toLocaleDateString('pt-BR')}`
+                    : 'pendente'
+              }
             </span>
           </div>
           <div className="flex flex-wrap gap-2">

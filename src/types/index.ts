@@ -170,6 +170,7 @@ export interface Contrato {
   assinatura_contratante?: string
   nome_contratante?: string
   assinado_contratante_em?: string
+  visualizado_contratante_em?: string
   latitude_contratante?: number
   longitude_contratante?: number
   endereco_contratante?: string
@@ -206,6 +207,7 @@ export interface ContratoPublico {
   nome_contratante?: string
   assinado_contratante_em?: string
   endereco_contratante?: string
+  visualizado_contratante_em?: string
   assinado: boolean
   assinado_em?: string
 }
