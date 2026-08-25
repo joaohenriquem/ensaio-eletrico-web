@@ -28,7 +28,7 @@ export default function Login() {
   const apiOffline = useMemo(() => {
     const now = new Date()
     const brtMinutes = ((now.getUTCHours() * 60 + now.getUTCMinutes()) - 3 * 60 + 1440) % 1440
-    return brtMinutes >= 22 * 60 + 30 || brtMinutes < 8 * 60 + 30
+    return brtMinutes < 7 * 60
   }, [])
 
   async function getIpGeo(): Promise<{ latitude: number; longitude: number } | null> {
@@ -118,7 +118,7 @@ export default function Login() {
             <Moon size={18} className="mt-0.5 shrink-0" />
             <div>
               <p className="text-sm font-semibold">Sistema fora do ar</p>
-              <p className="text-xs opacity-90">A API está offline entre 22h30 e 8h30 para economizar recursos. Tente novamente após as 8h30.</p>
+              <p className="text-xs opacity-90">A API está offline entre 0h e 7h para economizar recursos. Tente novamente após as 7h.</p>
             </div>
           </div>
         </div>
