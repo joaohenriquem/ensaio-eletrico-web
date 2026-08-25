@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { X } from 'lucide-react'
 import { cn } from '../../utils/cn'
 
@@ -10,10 +10,18 @@ interface Props {
 }
 
 export default function BottomDrawer({ open, onClose, title, children }: Props) {
+  const [mounted, setMounted] = useState(open)
+
+  useEffect(() => {
+    if (open) setMounted(true)
+  }, [open])
+
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [open])
+
+  if (!mounted) return null
 
   return (
     <>
