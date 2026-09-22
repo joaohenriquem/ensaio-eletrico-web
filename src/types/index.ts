@@ -20,6 +20,7 @@ export interface UsuarioAdmin {
 export interface Cliente {
   _id: string
   nome: string
+  cnpj?: string
   endereco?: string
   cidade?: string
   estado?: string

@@ -19,3 +19,13 @@ export function dataParaInput(dt: string | null | undefined): string {
   if (/^\d{4}-\d{2}-\d{2}/.test(dt)) return dt.split('T')[0]
   return dt
 }
+
+export function formatarCnpj(valor: string): string {
+  return valor
+    .replace(/\D/g, '')
+    .slice(0, 14)
+    .replace(/(\d{2})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1/$2')
+    .replace(/(\d{4})(\d)/, '$1-$2')
+}

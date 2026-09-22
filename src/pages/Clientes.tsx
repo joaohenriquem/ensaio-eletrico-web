@@ -6,10 +6,11 @@ import BottomDrawer from '../components/ui/BottomDrawer'
 import MapaModal from '../components/ui/MapaModal'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
+import { formatarCnpj } from '../utils/formatters'
 import type { Cliente } from '../types'
 
 const FORM_VAZIO = {
-  nome: '', endereco: '', cidade: '', estado: 'SP',
+  nome: '', cnpj: '', endereco: '', cidade: '', estado: 'SP',
   contato: '', telefone: '', email: '', sindico: '',
   torres: 1, observacoes: '',
 }
@@ -23,6 +24,7 @@ function ClienteForm({ inicial, onSave, onCancel }: {
 }) {
   const [form, setForm] = useState<FormData>({
     nome: inicial?.nome ?? '',
+    cnpj: inicial?.cnpj ?? '',
     endereco: inicial?.endereco ?? '',
     cidade: inicial?.cidade ?? '',
     estado: inicial?.estado ?? 'SP',
@@ -59,6 +61,7 @@ function ClienteForm({ inicial, onSave, onCancel }: {
   return (
     <div className="flex flex-col gap-3">
       <Input label="Nome / Condomínio *" value={form.nome} onChange={e => set('nome', e.target.value)} placeholder="Condomínio Recanto das Flores" />
+      <Input label="CNPJ" value={form.cnpj} maxLength={18} onChange={e => set('cnpj', formatarCnpj(e.target.value))} placeholder="00.000.000/0000-00" />
       <Input label="Endereço" value={form.endereco} onChange={e => set('endereco', e.target.value)} />
       <div className="grid grid-cols-4 gap-3">
         <div className="col-span-3">
@@ -165,6 +168,9 @@ function ClienteCard({ cliente, onEdit, onExcluir }: {
                 <Mail size={13} className="shrink-0 text-gray-400" />
                 {cliente.email}
               </p>
+            )}
+            {cliente.cnpj && (
+              <p className="text-xs"><span className="font-medium text-gray-700">CNPJ:</span> {cliente.cnpj}</p>
             )}
             {cliente.contato && (
               <p className="text-xs"><span className="font-medium text-gray-700">Contato:</span> {cliente.contato}</p>
