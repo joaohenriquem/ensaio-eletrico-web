@@ -84,9 +84,18 @@ export interface Anexo {
   url: string
 }
 
+export type TipoRelatorio = 'preventiva' | 'corretiva'
+
+export interface ServicoCorretivo {
+  descricao: string
+  foto_antes?: string
+  foto_depois?: string
+}
+
 export interface Relatorio {
   _id: string
   numero: string
+  tipo?: TipoRelatorio
   cliente_id?: string
   cliente_nome: string
   local: string
@@ -98,6 +107,8 @@ export interface Relatorio {
   normas?: string[]
   objetivo?: string
   paineis?: Painel[]
+  servicos?: ServicoCorretivo[]
+  texto_manutencao?: string
   conclusao?: string
   anexos?: Anexo[]
   assinatura?: string

@@ -190,7 +190,7 @@ Como o sistema usa OTP por e-mail, os testes que precisam de sessão autenticada
 
 ---
 
-### 2.5 `05-relatorios.spec.ts` — Relatórios de Manutenção
+### 2.5 `05-relatorios.spec.ts` — Manutenção Preventiva
 
 | # | Teste | Ação | Esperado |
 |---|---|---|---|

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Trash2, Download, CheckCircle, ChevronDown, Pencil, Wrench, MapPin, User } from 'lucide-react'
+import { Plus, Trash2, Download, CheckCircle, ChevronDown, Pencil, Wrench, Hammer, MapPin, User } from 'lucide-react'
 import ImageUpload from '../components/ui/ImageUpload'
 import AnexoUpload from '../components/ui/AnexoUpload'
 import SignaturePad from '../components/ui/SignaturePad'
@@ -10,14 +10,14 @@ import { useClientes } from '../hooks/useClientes'
 import {
   NORMAS_PADRAO, TIPOS_PAINEL, ITENS_INSPECAO_VISUAL, ITENS_LIMPEZA,
   ITENS_REAPERTO, ITENS_VERIFICACAO_ELETRICA, STATUS_RELATORIO, STATUS_RELATORIO_COR,
-  painelVazio,
+  painelVazio, servicoVazio,
 } from '../utils/constants'
 import { dataBr } from '../utils/formatters'
 import { baixarPdfRelatorio } from '../api/relatorios'
 import { foiEnfileirado } from '../offline/outboxMutation'
 import { useOutbox } from '../offline/useOutbox'
 import { remover } from '../offline/outbox'
-import type { Anexo, Painel, Relatorio } from '../types'
+import type { Anexo, Painel, Relatorio, ServicoCorretivo, TipoRelatorio } from '../types'
 import Card from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
@@ -144,7 +144,55 @@ function PainelForm({ painel, index, onChange }: {
   )
 }
 
-function RelatorioForm({ editData, onSuccess, onCancel }: {
+function ServicoForm({ servico, index, onChange, onRemove }: {
+  servico: ServicoCorretivo
+  index: number
+  onChange: (s: ServicoCorretivo) => void
+  onRemove?: () => void
+}) {
+  const [open, setOpen] = useState(true)
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center justify-between gap-2 px-4 py-3 hover:bg-gray-50"
+      >
+        <span className="truncate text-left font-medium text-sm">Serviço {index + 1}{servico.descricao ? `: ${servico.descricao}` : ''}</span>
+        <ChevronDown size={16} className={`shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      {open && (
+        <div className="border-t border-gray-100 px-4 pb-5 pt-4 flex flex-col gap-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Descrição</label>
+            <textarea rows={3} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#f0a500] focus:outline-none" value={servico.descricao} onChange={(e) => onChange({ ...servico, descricao: e.target.value })} />
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <p className="mb-2 text-xs font-semibold text-[#f0a500] uppercase tracking-wide">Foto Antes</p>
+              <ImageUpload max={1} fotos={servico.foto_antes ? [servico.foto_antes] : []} onChange={(fotos) => onChange({ ...servico, foto_antes: fotos[0] ?? '' })} />
+            </div>
+            <div>
+              <p className="mb-2 text-xs font-semibold text-[#f0a500] uppercase tracking-wide">Foto Depois</p>
+              <ImageUpload max={1} fotos={servico.foto_depois ? [servico.foto_depois] : []} onChange={(fotos) => onChange({ ...servico, foto_depois: fotos[0] ?? '' })} />
+            </div>
+          </div>
+          {onRemove && (
+            <div className="flex justify-end">
+              <Button size="sm" variant="secondary" onClick={onRemove}>
+                <Trash2 size={14} /> Remover serviço
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function RelatorioForm({ tipo, editData, onSuccess, onCancel }: {
+  tipo: TipoRelatorio
   editData?: Relatorio | null
   onSuccess: () => void
   onCancel: () => void
@@ -163,10 +211,12 @@ function RelatorioForm({ editData, onSuccess, onCancel }: {
     cft: editData?.cft ?? '',
     trt: editData?.trt ?? '',
     objetivo: editData?.objetivo ?? '',
+    texto_manutencao: editData?.texto_manutencao ?? '',
     conclusao: editData?.conclusao ?? '',
   })
   const [normas, setNormas] = useState<string[]>(editData?.normas ?? [])
   const [paineis, setPaineis] = useState<Painel[]>((editData?.paineis as Painel[] | undefined) ?? [painelVazio('Painel 1') as Painel])
+  const [servicos, setServicos] = useState<ServicoCorretivo[]>(editData?.servicos?.length ? editData.servicos : [servicoVazio()])
   const [anexos, setAnexos] = useState<Anexo[]>(editData?.anexos ?? [])
   const [assinatura, setAssinatura] = useState(editData?.assinatura ?? '')
   const [nomeAprovador, setNomeAprovador] = useState(editData?.nome_aprovador ?? '')
@@ -189,11 +239,17 @@ function RelatorioForm({ editData, onSuccess, onCancel }: {
   async function salvar(status: 'rascunho' | 'finalizado') {
     if (!clienteNome || !form.local) { setError('Cliente e endereço são obrigatórios.'); return }
     setError('')
+    const corretiva = tipo === 'corretiva'
     const payload = {
       ...form,
+      tipo,
       cliente_id: clienteId || undefined,
       cliente_nome: clienteNome,
-      normas, paineis, anexos,
+      normas, anexos,
+      // A corretiva usa a lista de serviços no lugar dos painéis.
+      paineis: corretiva ? [] : paineis,
+      servicos: corretiva ? servicos : [],
+      texto_manutencao: corretiva ? form.texto_manutencao : '',
       assinatura: assinatura || undefined,
       nome_aprovador: nomeAprovador || undefined,
       assinatura_contratado: assinaturaContratado || undefined,
@@ -283,21 +339,49 @@ function RelatorioForm({ editData, onSuccess, onCancel }: {
             <label className="mb-1 block text-sm font-medium text-gray-700">Objetivo</label>
             <textarea rows={3} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#f0a500] focus:outline-none" value={form.objetivo} onChange={(e) => setForm(f => ({ ...f, objetivo: e.target.value }))} />
           </div>
+          {tipo === 'corretiva' && (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Texto do item 4 – Manutenção Corretiva</label>
+              <textarea rows={4} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#f0a500] focus:outline-none" placeholder="Descreva a manutenção corretiva realizada (sai no item 4 do relatório)" value={form.texto_manutencao} onChange={(e) => setForm(f => ({ ...f, texto_manutencao: e.target.value }))} />
+            </div>
+          )}
         </div>
       </Card>
 
-      <h3 className="font-semibold text-[#1e3050]">Painéis ({paineis.length})</h3>
+      {tipo === 'corretiva' ? (
+        <>
+          <h3 className="font-semibold text-[#1e3050]">Serviços ({servicos.length})</h3>
 
-      {paineis.map((p, i) => (
-        <PainelForm key={i} painel={p} index={i} onChange={(np) => setPaineis(prev => prev.map((x, idx) => idx === i ? np : x))} />
-      ))}
+          {servicos.map((sv, i) => (
+            <ServicoForm
+              key={i}
+              servico={sv}
+              index={i}
+              onChange={(ns) => setServicos(prev => prev.map((x, idx) => idx === i ? ns : x))}
+              onRemove={servicos.length > 1 ? () => setServicos(prev => prev.filter((_, idx) => idx !== i)) : undefined}
+            />
+          ))}
 
-      <div className="flex justify-end gap-2">
-        <Button size="sm" onClick={addPainel}><Plus size={14} /> Adicionar</Button>
-        <Button size="sm" variant="secondary" onClick={removePainel} disabled={paineis.length <= 1}>
-          <Trash2 size={14} /> Remover
-        </Button>
-      </div>
+          <div className="flex justify-end gap-2">
+            <Button size="sm" onClick={() => setServicos(s => [...s, servicoVazio()])}><Plus size={14} /> Adicionar serviço</Button>
+          </div>
+        </>
+      ) : (
+        <>
+          <h3 className="font-semibold text-[#1e3050]">Painéis ({paineis.length})</h3>
+
+          {paineis.map((p, i) => (
+            <PainelForm key={i} painel={p} index={i} onChange={(np) => setPaineis(prev => prev.map((x, idx) => idx === i ? np : x))} />
+          ))}
+
+          <div className="flex justify-end gap-2">
+            <Button size="sm" onClick={addPainel}><Plus size={14} /> Adicionar</Button>
+            <Button size="sm" variant="secondary" onClick={removePainel} disabled={paineis.length <= 1}>
+              <Trash2 size={14} /> Remover
+            </Button>
+          </div>
+        </>
+      )}
 
       <Card title="Complementos">
         <div className="flex flex-col gap-3">
@@ -368,6 +452,9 @@ function RelatorioCard({ relatorio, onEdit, onExcluir }: {
 }) {
   const [open, setOpen] = useState(false)
   const atualizar = useAtualizarRelatorio()
+  const corretiva = relatorio.tipo === 'corretiva'
+  const Icone = corretiva ? Hammer : Wrench
+  const qtd = corretiva ? (relatorio.servicos ?? []).length : (relatorio.paineis ?? []).length
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -376,7 +463,7 @@ function RelatorioCard({ relatorio, onEdit, onExcluir }: {
         className="flex w-full items-start gap-3 px-4 py-3.5 text-left active:bg-gray-50"
       >
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1e3050]/10 mt-0.5">
-          <Wrench size={16} className="text-[#1e3050]" />
+          <Icone size={16} className="text-[#1e3050]" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
@@ -403,7 +490,9 @@ function RelatorioCard({ relatorio, onEdit, onExcluir }: {
               </p>
             )}
             <p className="flex items-center gap-1.5">
-              <Wrench size={11} className="shrink-0 text-gray-400" /> {(relatorio.paineis ?? []).length} painel{(relatorio.paineis ?? []).length !== 1 ? 'is' : ''}
+              <Icone size={11} className="shrink-0 text-gray-400" /> {corretiva
+                ? `${qtd} serviço${qtd !== 1 ? 's' : ''}`
+                : `${qtd} painel${qtd !== 1 ? 'is' : ''}`}
             </p>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -415,7 +504,7 @@ function RelatorioCard({ relatorio, onEdit, onExcluir }: {
             </button>
             {relatorio.status === 'rascunho' && (
               <button
-                onClick={() => atualizar.mutateAsync({ id: relatorio._id, data: { status: 'finalizado' } })}
+                onClick={() => atualizar.mutateAsync({ id: relatorio._id, data: { tipo: relatorio.tipo ?? 'preventiva', status: 'finalizado' } })}
                 className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-green-700 shadow-sm ring-1 ring-green-200 active:bg-green-50"
               >
                 <CheckCircle size={12} /> Finalizar
@@ -433,13 +522,18 @@ function RelatorioCard({ relatorio, onEdit, onExcluir }: {
 
 function RelatorioCardPendente({ item, onDescartar }: { item: import('../offline/outbox').OutboxItem; onDescartar: () => void }) {
   const payload = item.payload as Partial<Relatorio>
-  const qtdPaineis = (payload.paineis ?? []).length
+  const corretiva = payload.tipo === 'corretiva'
+  const Icone = corretiva ? Hammer : Wrench
+  const qtdItens = corretiva ? (payload.servicos ?? []).length : (payload.paineis ?? []).length
+  const rotuloItens = corretiva
+    ? `${qtdItens} serviço${qtdItens !== 1 ? 's' : ''}`
+    : `${qtdItens} painel${qtdItens !== 1 ? 'is' : ''}`
   const qtdAnexos = (payload.anexos ?? []).length
   return (
     <div className="overflow-hidden rounded-xl border border-dashed border-amber-300 bg-amber-50/60 px-4 py-3.5">
       <div className="flex items-start gap-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-100 mt-0.5">
-          <Wrench size={16} className="text-amber-600" />
+          <Icone size={16} className="text-amber-600" />
         </div>
         <div className="min-w-0 flex-1">
           <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
@@ -447,7 +541,7 @@ function RelatorioCardPendente({ item, onDescartar }: { item: import('../offline
           </span>
           <p className="mt-0.5 truncate font-semibold text-[#1e3050] text-sm">{payload.cliente_nome ?? '—'}</p>
           <p className="text-xs text-gray-500">
-            {payload.local} · {qtdPaineis} painel{qtdPaineis !== 1 ? 'is' : ''}{qtdAnexos ? ` · ${qtdAnexos} anexo${qtdAnexos !== 1 ? 's' : ''}` : ''}
+            {payload.local} · {rotuloItens}{qtdAnexos ? ` · ${qtdAnexos} anexo${qtdAnexos !== 1 ? 's' : ''}` : ''}
           </p>
           {item.ultimoErro && <p className="mt-1 text-xs text-red-600">{item.ultimoErro}</p>}
         </div>
@@ -459,15 +553,22 @@ function RelatorioCardPendente({ item, onDescartar }: { item: import('../offline
   )
 }
 
-export default function Relatorios() {
+const TITULOS: Record<TipoRelatorio, string> = {
+  preventiva: 'Manutenção Preventiva',
+  corretiva: 'Manutenção Corretiva',
+}
+
+export default function Relatorios({ tipo = 'preventiva' }: { tipo?: TipoRelatorio }) {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editRel, setEditRel] = useState<Relatorio | null>(null)
   const [excluirId, setExcluirId] = useState<string | null>(null)
   const [novoRelKey, setNovoRelKey] = useState(0)
 
-  const { data: relatorios = [], isLoading } = useRelatorios()
+  const { data: relatorios = [], isLoading } = useRelatorios({ tipo })
   const excluir = useExcluirRelatorio()
-  const pendentes = useOutbox('relatorios')
+  // A fila offline é compartilhada pelos dois tipos; cada tela mostra só os seus.
+  const pendentes = useOutbox('relatorios').filter(item => (item.payload.tipo ?? 'preventiva') === tipo)
+  const Icone = tipo === 'corretiva' ? Hammer : Wrench
 
   function abrirNovo() { setEditRel(null); setNovoRelKey(k => k + 1); setDrawerOpen(true) }
   function abrirEditar(rel: Relatorio) { setEditRel(rel); setDrawerOpen(true) }
@@ -475,7 +576,7 @@ export default function Relatorios() {
   return (
     <div className="flex flex-col gap-4 pb-24">
       <div>
-        <h1 className="text-xl font-bold text-[#1e3050]">Relatórios de Manutenção</h1>
+        <h1 className="text-xl font-bold text-[#1e3050]">{TITULOS[tipo]}</h1>
         {!isLoading && <p className="text-xs text-gray-400">{relatorios.length} relatório{relatorios.length !== 1 ? 's' : ''}</p>}
       </div>
 
@@ -483,7 +584,7 @@ export default function Relatorios() {
         <p className="py-12 text-center text-sm text-gray-400">Carregando...</p>
       ) : relatorios.length === 0 && pendentes.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-12 text-gray-400">
-          <Wrench size={32} className="opacity-30" />
+          <Icone size={32} className="opacity-30" />
           <p className="text-sm">Nenhum relatório encontrado.</p>
         </div>
       ) : (
@@ -512,7 +613,7 @@ export default function Relatorios() {
       </button>
 
       <BottomDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title={editRel ? 'Editar Relatório' : 'Novo Relatório'}>
-        <RelatorioForm key={editRel?._id ?? `new-${novoRelKey}`} editData={editRel} onSuccess={() => setDrawerOpen(false)} onCancel={() => setDrawerOpen(false)} />
+        <RelatorioForm tipo={tipo} key={editRel?._id ?? `new-${novoRelKey}`} editData={editRel} onSuccess={() => setDrawerOpen(false)} onCancel={() => setDrawerOpen(false)} />
       </BottomDrawer>
 
       {excluirId && (

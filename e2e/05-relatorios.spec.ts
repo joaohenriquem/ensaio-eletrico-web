@@ -4,14 +4,14 @@ import { loginViaStorage } from './helpers/auth'
 const TOKEN = process.env.TEST_TOKEN ?? ''
 const USER = JSON.parse(process.env.TEST_USER_JSON ?? '{"id":"1","username":"admin","nome":"Admin","perfil":"Administrador"}')
 
-test.describe('Relatórios de Manutenção', () => {
+test.describe('Manutenção Preventiva', () => {
   test.beforeEach(async ({ page }) => {
     await loginViaStorage(page, TOKEN, USER)
     await page.goto('/relatorios')
   })
 
   test('exibe página de relatórios', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'Relatórios de Manutenção' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Manutenção Preventiva' })).toBeVisible()
   })
 
   test('FAB de novo relatório visível', async ({ page }) => {

@@ -154,7 +154,8 @@ export default function App() {
             <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
             <Route path="/clientes" element={<PrivateRoute><Clientes /></PrivateRoute>} />
             <Route path="/ordens" element={<PrivateRoute><OrdensServico /></PrivateRoute>} />
-            <Route path="/relatorios" element={<PrivateRoute><Relatorios /></PrivateRoute>} />
+            <Route path="/relatorios" element={<PrivateRoute><Relatorios key="preventiva" tipo="preventiva" /></PrivateRoute>} />
+            <Route path="/manutencao-corretiva" element={<PrivateRoute><Relatorios key="corretiva" tipo="corretiva" /></PrivateRoute>} />
             <Route path="/propostas" element={<PrivateRoute><Propostas /></PrivateRoute>} />
             <Route path="/contratos" element={<PrivateRoute><Contratos /></PrivateRoute>} />
             <Route path="*" element={<Navigate to="/" replace />} />

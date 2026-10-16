@@ -1,7 +1,7 @@
 import api from './client'
 import type { Relatorio } from '../types'
 
-export async function listarRelatorios(params?: { status?: string }): Promise<Relatorio[]> {
+export async function listarRelatorios(params?: { status?: string; tipo?: string }): Promise<Relatorio[]> {
   const { data } = await api.get<Relatorio[]>('/relatorios', { params })
   return data
 }

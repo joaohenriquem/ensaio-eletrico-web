@@ -3,7 +3,7 @@ import { listarRelatorios, criarRelatorio, atualizarRelatorio, excluirRelatorio 
 import { comSuporteOffline } from '../offline/outboxMutation'
 import type { Relatorio } from '../types'
 
-export function useRelatorios(params?: { status?: string }) {
+export function useRelatorios(params?: { status?: string; tipo?: string }) {
   return useQuery({
     queryKey: ['relatorios', params],
     queryFn: () => listarRelatorios(params),

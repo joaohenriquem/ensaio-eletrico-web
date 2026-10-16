@@ -7,6 +7,7 @@ import {
   Users,
   ClipboardList,
   Wrench,
+  Hammer,
   FileText,
   FileSignature,
   Zap,
@@ -26,7 +27,8 @@ const navBase = [
   { to: '/ordens', label: 'Ordens de Serviço', icon: ClipboardList, exact: false },
   { to: '/propostas', label: 'Propostas Comerciais', icon: FileText, exact: false },
   { to: '/contratos', label: 'Contratos', icon: FileSignature, exact: false },
-  { to: '/relatorios', label: 'Relatórios de Manutenção', icon: Wrench, exact: false },
+  { to: '/relatorios', label: 'Manutenção Preventiva', icon: Wrench, exact: false },
+  { to: '/manutencao-corretiva', label: 'Manutenção Corretiva', icon: Hammer, exact: false },
 ]
 
 const navAdmin = [

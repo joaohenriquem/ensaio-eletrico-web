@@ -120,6 +120,10 @@ export const CONCLUSAO_PADRAO =
   'pontuais conforme descrito nas não conformidades. Foi verificado circuitos de iluminação das áreas comuns e efetuado troca de ' +
   'lâmpadas queimadas. As devidas recomendações seguirão de propostas corretivas havendo solicitação das mesmas.'
 
+export function servicoVazio() {
+  return { descricao: '', foto_antes: '', foto_depois: '' }
+}
+
 export function painelVazio(nome = 'Novo Painel') {
   return {
     nome,

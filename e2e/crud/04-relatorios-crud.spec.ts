@@ -9,7 +9,7 @@ test.describe('CRUD — Relatórios de Manutenção', () => {
   test.beforeEach(async ({ page }) => {
     await loginViaStorage(page)
     await page.goto('/relatorios')
-    await page.getByRole('heading', { name: 'Relatórios de Manutenção', exact: true }).waitFor({ timeout: TIMEOUT })
+    await page.getByRole('heading', { name: 'Manutenção Preventiva', exact: true }).waitFor({ timeout: TIMEOUT })
   })
 
   test('CREATE — cria novo relatório', async ({ page }) => {
